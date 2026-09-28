@@ -5,18 +5,18 @@ then swap the placeholder in PAGES below for your_page.render.
 """
 import streamlit as st
 
-from views import coming_soon, factor_breakdown, overview
+from views import clusters_and_trends, factor_breakdown, overview, the_debate
 
 st.set_page_config(page_title="HappiScope", page_icon=":smiley:", layout="wide")
 
 PAGES = {
     "Overview": overview.render,
-    "Factor Breakdown": factor_breakdown.render,                                    # Adithya
-    "Clusters & Trends": lambda: coming_soon.render("Clusters & Trends", "Ananya"),  # Ananya
-    "The Debate": lambda: coming_soon.render("The Debate: does income plateau?", "Peer"),  # Peer
+    "Factor Breakdown": factor_breakdown.render,
+    "Clusters & Trends": clusters_and_trends.render,
+    "The Debate": the_debate.render,
 }
 
 st.sidebar.title("HappiScope")
-choice = st.sidebar.radio("Go to", list(PAGES))
+choice = st.sidebar.radio("Go to", list(PAGES), key="nav_page")
 st.sidebar.caption("Science of Happiness midsem project")
 PAGES[choice]()
