@@ -1,0 +1,470 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "8b72b036",
+   "metadata": {
+    "vscode": {
+     "languageId": "plaintext"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "!pip install -q pandas numpy scikit-learn statsmodels scipy"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "de6482e7",
+   "metadata": {
+    "vscode": {
+     "languageId": "plaintext"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "from google.colab import drive\n",
+    "drive.mount('/content/drive')\n",
+    "\n",
+    "import pandas as pd\n",
+    "\n",
+    "DRIVE_PATH = '/content/drive/MyDrive/HappiScope/happiscope_master.csv'\n",
+    "\n",
+    "try:\n",
+    "    df = pd.read_csv(DRIVE_PATH)\n",
+    "    print(\"Loaded from Drive:\", df.shape)\n",
+    "except FileNotFoundError:\n",
+    "    from google.colab import files\n",
+    "    print(\"Not found on Drive — upload happiscope_master.csv manually:\")\n",
+    "    uploaded = files.upload()\n",
+    "    # Attempt to read with 'latin1' encoding if 'utf-8' fails\n",
+    "    try:\n",
+    "        df = pd.read_csv(list(uploaded.keys())[0])\n",
+    "    except UnicodeDecodeError:\n",
+    "        df = pd.read_csv(list(uploaded.keys())[0], encoding='latin1')\n",
+    "    print(\"Loaded from upload:\", df.shape)\n",
+    "\n",
+    "df.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "0e45c90a",
+   "metadata": {
+    "vscode": {
+     "languageId": "plaintext"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "# Quick sanity check before modeling — this should look right before you trust anything below\n",
+    "print(df.shape)\n",
+    "print(df['year'].min(), '-', df['year'].max())\n",
+    "print(df['Country name'].nunique(), \"unique countries\")\n",
+    "print(df.isna().sum())"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "4d9c917a",
+   "metadata": {
+    "vscode": {
+     "languageId": "plaintext"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "import statsmodels.api as sm\n",
+    "\n",
+    "FACTOR_COLS = ['Log GDP per capita', 'Social support', 'Healthy life expectancy at birth', 'Freedom to make life choices', 'Generosity', 'Perceptions of corruption']\n",
+    "\n",
+    "X = df[FACTOR_COLS]\n",
+    "X = sm.add_constant(X)\n",
+    "y = df['Life Ladder']\n",
+    "\n",
+    "global_model = sm.OLS(y, X, missing='drop').fit()\n",
+    "print(global_model.summary())"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "9dd4b3ff",
+   "metadata": {
+    "vscode": {
+     "languageId": "plaintext"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "# Pull the coefficients into a clean table you can screenshot / paste into the report\n",
+    "global_coefs = pd.DataFrame({\n",
+    "    'factor': global_model.params.index,\n",
+    "    'coefficient': global_model.params.values,\n",
+    "    'p_value': global_model.pvalues.values\n",
+    "})\n",
+    "print(\"R-squared:\", round(global_model.rsquared, 3))\n",
+    "global_coefs.sort_values('coefficient', key=abs, ascending=False)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "1876f038",
+   "metadata": {
+    "vscode": {
+     "languageId": "plaintext"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "yearly_coefs = []\n",
+    "\n",
+    "for yr in sorted(df['year'].unique()):\n",
+    "    yr_df = df[df['year'] == yr]\n",
+    "    if len(yr_df) < 20:   # skip years with too few countries to trust a regression\n",
+    "        continue\n",
+    "    X_yr = sm.add_constant(yr_df[FACTOR_COLS])\n",
+    "    y_yr = yr_df['Life Ladder']\n",
+    "    model_yr = sm.OLS(y_yr, X_yr, missing='drop').fit()\n",
+    "\n",
+    "    # Check if r_squared is finite before adding to results\n",
+    "    if pd.isna(model_yr.rsquared) or not pd.api.types.is_number(model_yr.rsquared) or model_yr.rsquared == -float('inf'):\n",
+    "        print(f\"Skipping year {yr} due to invalid R-squared: {model_yr.rsquared}\")\n",
+    "        continue\n",
+    "\n",
+    "    row = {'year': yr, 'r_squared': model_yr.rsquared}\n",
+    "    for factor in FACTOR_COLS:\n",
+    "        row[factor] = model_yr.params.get(factor, None)\n",
+    "    yearly_coefs.append(row)\n",
+    "\n",
+    "yearly_df = pd.DataFrame(yearly_coefs).set_index('year')\n",
+    "yearly_df"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "a2b27138",
+   "metadata": {
+    "vscode": {
+     "languageId": "plaintext"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "# Fix: Ensure each yearly regression uses at least 30 complete-case observations.\n",
+    "# This prevents unstable coefficients from years with sparse data.\n",
+    "\n",
+    "corrected_yearly_coefs = []\n",
+    "\n",
+    "for yr in sorted(df['year'].unique()):\n",
+    "    yr_df = df[df['year'] == yr]\n",
+    "\n",
+    "    # Select relevant columns for complete-case check\n",
+    "    cols_to_check = FACTOR_COLS + ['Life Ladder']\n",
+    "    complete_cases_df = yr_df[cols_to_check].dropna()\n",
+    "\n",
+    "    # Check for complete-case count before fitting OLS\n",
+    "    if len(complete_cases_df) < 30: # New threshold of at least 30 complete cases\n",
+    "        print(f\"Skipping year {yr} due to insufficient complete cases ({len(complete_cases_df)} < 30).\")\n",
+    "        continue\n",
+    "\n",
+    "    X_yr_corrected = sm.add_constant(complete_cases_df[FACTOR_COLS])\n",
+    "    y_yr_corrected = complete_cases_df['Life Ladder']\n",
+    "\n",
+    "    model_yr_corrected = sm.OLS(y_yr_corrected, X_yr_corrected).fit() # missing='drop' not needed here as we already dropped NaNs\n",
+    "\n",
+    "    # Skip if R-squared is invalid (e.g., -inf, NaN)\n",
+    "    if pd.isna(model_yr_corrected.rsquared) or model_yr_corrected.rsquared == -float('inf'):\n",
+    "        print(f\"Skipping year {yr} due to invalid R-squared: {model_yr_corrected.rsquared}\")\n",
+    "        continue\n",
+    "\n",
+    "    row = {'year': yr, 'r_squared': model_yr_corrected.rsquared}\n",
+    "    for factor in FACTOR_COLS:\n",
+    "        row[factor] = model_yr_corrected.params.get(factor, None)\n",
+    "    corrected_yearly_coefs.append(row)\n",
+    "\n",
+    "# Rebuild yearly_df, earliest_year, latest_year with corrected data\n",
+    "corrected_yearly_df = pd.DataFrame(corrected_yearly_coefs).set_index('year')\n",
+    "corrected_earliest_year = corrected_yearly_df.index.min()\n",
+    "corrected_latest_year = corrected_yearly_df.index.max()\n",
+    "\n",
+    "# Rebuild comparison table, dropping pct_change and sorting by absolute 'change'\n",
+    "corrected_comparison = pd.DataFrame({\n",
+    "    f'{corrected_earliest_year}': corrected_yearly_df.loc[corrected_earliest_year, FACTOR_COLS],\n",
+    "    f'{corrected_latest_year}': corrected_yearly_df.loc[corrected_latest_year, FACTOR_COLS],\n",
+    "})\n",
+    "corrected_comparison['change'] = corrected_comparison[f'{corrected_latest_year}'] - corrected_comparison[f'{corrected_earliest_year}']\n",
+    "\n",
+    "# Display the corrected yearly_df and comparison\n",
+    "display(corrected_yearly_df)\n",
+    "display(corrected_comparison.sort_values('change', key=abs, ascending=False))\n",
+    "\n",
+    "# Update global variables for downstream use\n",
+    "yearly_df = corrected_yearly_df\n",
+    "earliest_year = corrected_earliest_year\n",
+    "latest_year = corrected_latest_year\n",
+    "comparison = corrected_comparison.sort_values('change', key=abs, ascending=False)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "0302cfc8",
+   "metadata": {
+    "vscode": {
+     "languageId": "plaintext"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "# Directly compare the earliest vs. latest year you have data for\n",
+    "earliest_year = yearly_df.index.min()\n",
+    "latest_year = yearly_df.index.max()\n",
+    "\n",
+    "comparison = pd.DataFrame({\n",
+    "    f'{earliest_year}': yearly_df.loc[earliest_year, FACTOR_COLS],\n",
+    "    f'{latest_year}': yearly_df.loc[latest_year, FACTOR_COLS],\n",
+    "})\n",
+    "comparison['change'] = comparison[f'{latest_year}'] - comparison[f'{earliest_year}']\n",
+    "comparison['pct_change'] = (comparison['change'] / comparison[f'{earliest_year}'].abs()) * 100\n",
+    "comparison.sort_values('change', key=abs, ascending=False)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "88f84428",
+   "metadata": {
+    "vscode": {
+     "languageId": "plaintext"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "if 'region' in df.columns or 'regional_indicator' in df.columns:\n",
+    "    region_col = 'region' if 'region' in df.columns else 'regional_indicator'\n",
+    "    print(f\"Using existing '{region_col}' column from the dataset.\")\n",
+    "else:\n",
+    "    print(\"No region column found — deriving continents as a rough stand-in.\")\n",
+    "    !pip install -q pycountry pycountry-convert\n",
+    "    import pycountry\n",
+    "    import pycountry_convert as pc\n",
+    "\n",
+    "    def country_to_continent(country_name):\n",
+    "        try:\n",
+    "            country_code = pycountry.countries.lookup(country_name).alpha_2\n",
+    "            continent_code = pc.country_alpha2_to_continent_code(country_code)\n",
+    "            return pc.convert_continent_code_to_continent_name(continent_code)\n",
+    "        except Exception:\n",
+    "            return 'Unknown'\n",
+    "\n",
+    "    df['region'] = df['Country name'].apply(country_to_continent)\n",
+    "    region_col = 'region'\n",
+    "    print(df['region'].value_counts())"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "5cf03e02",
+   "metadata": {
+    "vscode": {
+     "languageId": "plaintext"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "region_coefs = []\n",
+    "\n",
+    "for region, region_df in df.groupby(region_col):\n",
+    "    if len(region_df) < 20:\n",
+    "        continue\n",
+    "    X_r = sm.add_constant(region_df[FACTOR_COLS])\n",
+    "    y_r = region_df['Life Ladder']\n",
+    "    model_r = sm.OLS(y_r, X_r, missing='drop').fit()\n",
+    "\n",
+    "    row = {'region': region, 'r_squared': model_r.rsquared, 'n_obs': len(region_df)}\n",
+    "    for factor in FACTOR_COLS:\n",
+    "        row[factor] = model_r.params.get(factor, None)\n",
+    "    region_coefs.append(row)\n",
+    "\n",
+    "region_df_results = pd.DataFrame(region_coefs).set_index('region')\n",
+    "region_df_results"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "2e134e29",
+   "metadata": {
+    "vscode": {
+     "languageId": "plaintext"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "from sklearn.ensemble import RandomForestRegressor\n",
+    "from sklearn.model_selection import train_test_split\n",
+    "from scipy.stats import spearmanr\n",
+    "\n",
+    "X_rf = df[FACTOR_COLS].dropna()\n",
+    "y_rf = df.loc[X_rf.index, 'Life Ladder']\n",
+    "\n",
+    "X_train, X_test, y_train, y_test = train_test_split(\n",
+    "    X_rf, y_rf, test_size=0.2, random_state=42)\n",
+    "\n",
+    "rf = RandomForestRegressor(n_estimators=200, random_state=42)\n",
+    "rf.fit(X_train, y_train)\n",
+    "\n",
+    "test_r2 = rf.score(X_test, y_test)\n",
+    "importances = pd.Series(rf.feature_importances_, index=FACTOR_COLS).sort_values(ascending=False)\n",
+    "\n",
+    "print(\"Random Forest test R-squared:\", round(test_r2, 3))\n",
+    "print(\"\\nFeature importances:\")\n",
+    "print(importances)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "e690b852",
+   "metadata": {
+    "vscode": {
+     "languageId": "plaintext"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "# Do the linear regression and the Random Forest agree on the ranking of factors?\n",
+    "ols_ranking = global_coefs[global_coefs['factor'] != 'const'].set_index('factor')['coefficient'].abs().sort_values(ascending=False)\n",
+    "rf_ranking = importances\n",
+    "\n",
+    "comparison_ranks = pd.DataFrame({\n",
+    "    'ols_rank': ols_ranking.rank(ascending=False),\n",
+    "    'rf_rank': rf_ranking.rank(ascending=False)\n",
+    "})\n",
+    "correlation, p_value = spearmanr(comparison_ranks['ols_rank'], comparison_ranks['rf_rank'])\n",
+    "\n",
+    "print(comparison_ranks)\n",
+    "print(f\"\\nSpearman rank correlation between OLS and Random Forest: {correlation:.2f} (p={p_value:.3f})\")\n",
+    "print(\"A high positive correlation here is a good sentence for your report:\")\n",
+    "print(\"'A linear and non-linear model independently agree on which factors matter most.'\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "ea9f312b",
+   "metadata": {
+    "vscode": {
+     "languageId": "plaintext"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "from sklearn.preprocessing import StandardScaler\n",
+    "from sklearn.inspection import permutation_importance\n",
+    "\n",
+    "# 1. Standardize predictors and refit OLS\n",
+    "# First, drop NaNs from X and y to ensure consistent indices for StandardScaler\n",
+    "X_complete = df[FACTOR_COLS].dropna()\n",
+    "y_complete = df.loc[X_complete.index, 'Life Ladder']\n",
+    "\n",
+    "scaler = StandardScaler()\n",
+    "X_scaled = scaler.fit_transform(X_complete)\n",
+    "X_scaled_df = pd.DataFrame(X_scaled, columns=FACTOR_COLS, index=X_complete.index)\n",
+    "X_scaled_df = sm.add_constant(X_scaled_df) # Add constant to scaled data\n",
+    "\n",
+    "scaled_ols_model = sm.OLS(y_complete, X_scaled_df).fit()\n",
+    "\n",
+    "# Standardized coefficients (excluding constant)\n",
+    "standardized_ols_coefs = scaled_ols_model.params.drop('const').abs().sort_values(ascending=False)\n",
+    "\n",
+    "print(\"Standardized OLS Coefficients (absolute value, sorted):\")\n",
+    "display(standardized_ols_coefs)\n",
+    "\n",
+    "# 2. Compute permutation importance for Random Forest\n",
+    "# Use X_test, y_test from the original RF setup\n",
+    "perm_importance_results = permutation_importance(rf, X_test, y_test, n_repeats=10, random_state=42)\n",
+    "permutation_importances_series = pd.Series(perm_importance_results.importances_mean, index=X_test.columns).sort_values(ascending=False)\n",
+    "\n",
+    "print(\"\\nRandom Forest Permutation Importances (mean, sorted):\")\n",
+    "display(permutation_importances_series)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "77422ee1",
+   "metadata": {
+    "vscode": {
+     "languageId": "plaintext"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "# 3. Redo Spearman rank correlation and print both comparisons side-by-side\n",
+    "\n",
+    "# Original (biased) comparison (using unstandardized OLS coefs and MDI importances)\n",
+    "print(\"\\n--- Original (Biased) Comparison ---\")\n",
+    "display(comparison_ranks)\n",
+    "\n",
+    "old_correlation, old_p_value = spearmanr(comparison_ranks['ols_rank'], comparison_ranks['rf_rank'])\n",
+    "print(f\"Spearman rank correlation (Original): {old_correlation:.2f} (p={old_p_value:.3f})\")\n",
+    "\n",
+    "# Corrected comparison (using standardized OLS coefs and permutation importances)\n",
+    "corrected_ols_ranking = standardized_ols_coefs.rank(ascending=False)\n",
+    "corrected_rf_ranking = permutation_importances_series.rank(ascending=False)\n",
+    "\n",
+    "corrected_comparison_ranks = pd.DataFrame({\n",
+    "    'ols_rank_std': corrected_ols_ranking,\n",
+    "    'rf_rank_perm': corrected_rf_ranking\n",
+    "})\n",
+    "\n",
+    "print(\"\\n--- Corrected Comparison ---\")\n",
+    "display(corrected_comparison_ranks)\n",
+    "\n",
+    "new_correlation, new_p_value = spearmanr(corrected_comparison_ranks['ols_rank_std'], corrected_comparison_ranks['rf_rank_perm'])\n",
+    "print(f\"Spearman rank correlation (Corrected): {new_correlation:.2f} (p={new_p_value:.3f})\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "3c4e72fc",
+   "metadata": {
+    "vscode": {
+     "languageId": "plaintext"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "import os\n",
+    "OUT_DIR = '/content/drive/MyDrive/HappiScope/adithya_outputs'\n",
+    "os.makedirs(OUT_DIR, exist_ok=True)\n",
+    "\n",
+    "global_coefs.to_csv(f'{OUT_DIR}/global_regression_coefficients.csv', index=False)\n",
+    "yearly_df.to_csv(f'{OUT_DIR}/regression_coefficients_by_year.csv')\n",
+    "comparison.to_csv(f'{OUT_DIR}/factor_change_{earliest_year}_vs_{latest_year}.csv')\n",
+    "region_df_results.to_csv(f'{OUT_DIR}/regression_coefficients_by_region.csv')\n",
+    "importances.to_csv(f'{OUT_DIR}/random_forest_feature_importances.csv')\n",
+    "\n",
+    "print(\"Saved all outputs to:\", OUT_DIR)\n",
+    "print(os.listdir(OUT_DIR))"
+   ]
+  }
+ ],
+ "metadata": {
+  "language_info": {
+   "name": "python"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
