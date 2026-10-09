@@ -37,16 +37,16 @@ def render():
         labels={TARGET: "Happiness score"},
     )
     fig.update_layout(margin=dict(l=0, r=0, t=0, b=0), height=460)
-    st.plotly_chart(fig, width="stretch")
+    st.plotly_chart(fig, use_container_width=True)
 
     left, right = st.columns(2)
     cols = ["Country name", TARGET]
     with left:
         st.subheader(f"Top 10 in {year}")
-        st.dataframe(d.nlargest(10, TARGET)[cols].reset_index(drop=True), hide_index=True, width="stretch")
+        st.dataframe(d.nlargest(10, TARGET)[cols].reset_index(drop=True), hide_index=True, use_container_width=True)
     with right:
         st.subheader(f"Bottom 10 in {year}")
-        st.dataframe(d.nsmallest(10, TARGET)[cols].reset_index(drop=True), hide_index=True, width="stretch")
+        st.dataframe(d.nsmallest(10, TARGET)[cols].reset_index(drop=True), hide_index=True, use_container_width=True)
 
     st.caption("Source: World Happiness Report (Gallup World Poll). Score = 'Life Ladder': "
                "people rate their life from 0 (worst possible) to 10 (best possible).")

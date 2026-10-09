@@ -7,6 +7,7 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import StandardScaler
+from scipy import stats
 
 from common import FACTOR_COLS, FACTORS, TARGET, load_data
 
@@ -141,7 +142,7 @@ def render():
                 )
                 fig_elbow.add_vline(x=k, line_dash="dash", line_color="#d95f02", annotation_text=f"Selected K={k}")
                 fig_elbow.update_layout(height=280, margin=dict(l=0, r=0, t=40, b=0))
-                st.plotly_chart(fig_elbow, width="stretch")
+                st.plotly_chart(fig_elbow, use_container_width=True)
             with col_r:
                 fig_sil = px.line(
                     diag_df, x="K", y="Silhouette Score", markers=True,
@@ -149,7 +150,7 @@ def render():
                 )
                 fig_sil.add_vline(x=k, line_dash="dash", line_color="#d95f02", annotation_text=f"Selected K={k}")
                 fig_sil.update_layout(height=280, margin=dict(l=0, r=0, t=40, b=0))
-                st.plotly_chart(fig_sil, width="stretch")
+                st.plotly_chart(fig_sil, use_container_width=True)
             st.caption("Note: Silhouette scores in social science panel surveys typically range between 0.20 and 0.40 due to continuous, overlapping distributions.")
 
     # ------------------------------------------------------------- PCA Visualization
@@ -183,7 +184,7 @@ def render():
     )
     fig_pca.update_traces(marker=dict(size=10, opacity=0.85, line=dict(width=0.5, color="#333")))
     fig_pca.update_layout(height=480, margin=dict(l=0, r=0, t=40, b=0), legend_title_text="")
-    st.plotly_chart(fig_pca, width="stretch")
+    st.plotly_chart(fig_pca, use_container_width=True)
     st.caption("Hover over any dot to view country name, region, happiness score, and all six underlying factor values. "
                "Axes are mathematical projections of the 6 dimensions onto 2 orthogonal axes, not direct real-world units.")
 
@@ -196,7 +197,7 @@ def render():
 
     st.dataframe(
         prof_summary.style.format({"Avg Life Ladder": "{:.2f}"}),
-        width="stretch",
+        use_container_width=True,
     )
 
     melted_prof = prof_means.melt(id_vars="cluster", var_name="Factor", value_name="Mean Value")
@@ -214,7 +215,7 @@ def render():
         category_orders={"cluster": [f"Cluster {i+1}" for i in range(k)]},
     )
     fig_bar.update_layout(height=400, margin=dict(l=0, r=0, t=40, b=0), legend_title_text="")
-    st.plotly_chart(fig_bar, width="stretch")
+    st.plotly_chart(fig_bar, use_container_width=True)
     st.caption("Clusters represent structural groupings (e.g. high GDP and strong social support vs lower resources with high freedom). "
                "Cluster names are neutral numeric labels to avoid subjective stereotyping.")
 
@@ -246,7 +247,7 @@ def render():
             f"{c_cluster} Average": "{:.2f}",
             "Diff vs Cluster Avg": "{:+.2f}",
         }),
-        width="stretch",
+        use_container_width=True,
     )
 
     # ------------------------------------------------------------- Longitudinal Trends
@@ -277,6 +278,66 @@ def render():
     )
     fig_trend.add_vline(x=base_year, line_dash="dash", line_color="#888", annotation_text=f"Base Year {base_year}")
     fig_trend.update_layout(height=420, margin=dict(l=0, r=0, t=50, b=0), legend_title_text="")
-    st.plotly_chart(fig_trend, width="stretch")
+    st.plotly_chart(fig_trend, use_container_width=True)
 
     st.caption("When survey coverage is sparse in earlier years (e.g. 2005–2007), cluster averages reflect available country observations within each cohort.")
+
+    # ------------------------------------------------------------- Trends & Biggest Movers
+    st.subheader("6. Biggest Movers (2015–2023)")
+    st.markdown("Which countries gained or lost the most happiness since 2015, and which factors drove that change?")
+
+    df_trend = df[df["year"] >= 2015].copy()
+    factor_std = df[FACTOR_COLS].std()  # used to put factor changes on a comparable scale
+
+    results = []
+    for country, group in df_trend.groupby("Country name"):
+        group = group.dropna(subset=[TARGET]).sort_values("year")
+        if len(group) >= 5:
+            slope, intercept, r, p, se = stats.linregress(group["year"], group[TARGET])
+
+            # raw (real-unit) factor differences between first and last available year
+            first = group.iloc[0]
+            last = group.iloc[-1]
+            factor_diffs = {
+                FACTORS[f]: last[f] - first[f]
+                for f in FACTOR_COLS if pd.notna(last[f]) and pd.notna(first[f])
+            }
+
+            if factor_diffs:
+                # pick the "biggest driver" on a standardized scale so factors with
+                # naturally wider raw ranges (e.g. life expectancy in years) don't
+                # automatically dominate over factors on a 0-1 scale
+                standardized_diffs = {
+                    FACTORS[f]: (last[f] - first[f]) / factor_std[f]
+                    for f in FACTOR_COLS if pd.notna(last[f]) and pd.notna(first[f])
+                }
+                biggest_factor = max(standardized_diffs, key=lambda name: abs(standardized_diffs[name]))
+                driver_change = factor_diffs[biggest_factor]  # report in real units, not z-scores
+            else:
+                biggest_factor = "N/A"
+                driver_change = 0.0
+
+            results.append({
+                "Country": country,
+                "Trend (Slope)": slope,
+                "Start Score": first[TARGET],
+                "End Score": last[TARGET],
+                "Key Driver Factor": biggest_factor,
+                "Driver Change": driver_change
+            })
+
+    if not results:
+        st.warning("Not enough countries have at least 5 years of data from 2015 onward to compute trends.")
+        return
+
+    trend_df = pd.DataFrame(results).sort_values("Trend (Slope)")
+    losers = trend_df.head(5).copy()
+    gainers = trend_df.tail(5).sort_values("Trend (Slope)", ascending=False).copy()
+
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown("**Top 5 Biggest Losers**")
+        st.dataframe(losers.style.format({"Trend (Slope)": "{:.3f}", "Start Score": "{:.2f}", "End Score": "{:.2f}", "Driver Change": "{:+.3f}"}), hide_index=True)
+    with c2:
+        st.markdown("**Top 5 Biggest Gainers**")
+        st.dataframe(gainers.style.format({"Trend (Slope)": "{:.3f}", "Start Score": "{:.2f}", "End Score": "{:.2f}", "Driver Change": "{:+.3f}"}), hide_index=True)

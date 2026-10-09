@@ -213,7 +213,7 @@ def render():
     )
 
     fig.update_layout(height=520, margin=dict(l=0, r=0, t=50, b=0), legend=dict(yanchor="bottom", y=0.02, xanchor="right", x=0.98))
-    st.plotly_chart(fig, width="stretch")
+    st.plotly_chart(fig, use_container_width=True)
 
     # ------------------------------------------------------------- Comparative Metrics Table
     st.subheader("4. Statistical Comparison Table")
@@ -242,7 +242,7 @@ def render():
             f"{pw_res['p_value_change']:.2e}",
         ],
     })
-    st.dataframe(comp_df, hide_index=True, width="stretch")
+    st.dataframe(comp_df, hide_index=True, use_container_width=True)
 
     # ------------------------------------------------------------- Plateau Interpretation
     st.subheader("5. Statistical Verdict & Interpretation")

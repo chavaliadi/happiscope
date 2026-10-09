@@ -87,7 +87,7 @@ def _country_tab(df: pd.DataFrame):
         height=380, margin=dict(l=0, r=30, t=50, b=0),
     )
     fig.add_vline(x=0, line_color="#888")
-    st.plotly_chart(fig, width="stretch")
+    st.plotly_chart(fig, use_container_width=True)
     st.caption("Each bar = (global regression coefficient) x (how far the country is from the world average on that factor). "
                "Green pushes the score up, red pulls it down.")
 
@@ -96,7 +96,7 @@ def _country_tab(df: pd.DataFrame):
     fig2 = px.line(line.melt("year", var_name="Series", value_name="Score"), x="year", y="Score",
                    color="Series", markers=True, title=f"{country} over time vs world average")
     fig2.update_layout(height=320, margin=dict(l=0, r=0, t=50, b=0))
-    st.plotly_chart(fig2, width="stretch")
+    st.plotly_chart(fig2, use_container_width=True)
 
 
 # --------------------------------------------------------------- tab 2
@@ -121,7 +121,7 @@ def _global_tab(df: pd.DataFrame):
                       xaxis_title="Change in happiness score for a 1-standard-deviation increase in the factor",
                       yaxis=dict(autorange="reversed"), height=360, margin=dict(l=0, r=30, t=50, b=0))
     fig.add_vline(x=0, line_color="#888")
-    st.plotly_chart(fig, width="stretch")
+    st.plotly_chart(fig, use_container_width=True)
 
     st.subheader("Do two very different models agree?")
     cmp_ = imp.set_index("factor")
@@ -131,7 +131,7 @@ def _global_tab(df: pd.DataFrame):
     view = cmp_.rename(index=FACTORS)[["standardized_ols", "OLS rank", "rf_permutation", "RF rank"]]
     view.columns = ["Standardized OLS coef.", "OLS rank", "RF permutation importance", "RF rank"]
     st.dataframe(view.sort_values("OLS rank").style.format(
-        {"Standardized OLS coef.": "{:+.3f}", "RF permutation importance": "{:.3f}"}), width="stretch")
+        {"Standardized OLS coef.": "{:+.3f}", "RF permutation importance": "{:.3f}"}), use_container_width=True)
     st.success(f"Rank agreement (Spearman) = **{rho:.2f}** (p = {p:.3f}). A linear model and a non-linear model, "
                "measured fairly, largely agree on which factors matter most.")
 
@@ -140,7 +140,7 @@ def _global_tab(df: pd.DataFrame):
                  "looks tiny (about 0.03) even though it matters; social support runs 0-1, so its raw coefficient looks huge. "
                  "Ranking raw coefficients would be misleading. Standardizing puts every factor on the same footing.")
         raw = table.rename(index={**FACTORS, "const": "Intercept"})
-        st.dataframe(raw.style.format({"coefficient": "{:+.3f}", "p_value": "{:.2e}"}), width="stretch")
+        st.dataframe(raw.style.format({"coefficient": "{:+.3f}", "p_value": "{:.2e}"}), use_container_width=True)
 
 
 # --------------------------------------------------------------- tab 3
@@ -154,7 +154,7 @@ def _shift_tab(df: pd.DataFrame):
     fig.update_yaxes(matches=None, showticklabels=True)
     fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
     fig.update_layout(margin=dict(l=0, r=0, t=40, b=0))
-    st.plotly_chart(fig, width="stretch")
+    st.plotly_chart(fig, use_container_width=True)
 
     st.markdown("#### Compare two periods")
     lo, hi = int(yc.index.min()), int(yc.index.max())
@@ -170,13 +170,13 @@ def _shift_tab(df: pd.DataFrame):
     })
     comp["Change"] = comp.iloc[:, 1] - comp.iloc[:, 0]
     comp = comp.rename(index=FACTORS).reindex(comp.rename(index=FACTORS)["Change"].abs().sort_values(ascending=False).index)
-    st.dataframe(comp.style.format("{:+.3f}"), width="stretch")
+    st.dataframe(comp.style.format("{:+.3f}"), use_container_width=True)
     st.caption(f"Standardized coefficients from pooled regressions ({ra[3]:,} vs {rb[3]:,} country-years; "
                f"R-squared {ra[2]:.2f} vs {rb[2]:.2f}). Sorted by size of change. Pooling several years gives steadier estimates than two single years.")
     with st.expander("Raw (unstandardized) coefficients for the same periods"):
         raw = pd.DataFrame({f"{pa[0]}-{pa[1]}": ra[0], f"{pb[0]}-{pb[1]}": rb[0]}).rename(index=FACTORS)
         raw["Change"] = raw.iloc[:, 1] - raw.iloc[:, 0]
-        st.dataframe(raw.style.format("{:+.3f}"), width="stretch")
+        st.dataframe(raw.style.format("{:+.3f}"), use_container_width=True)
 
 
 # --------------------------------------------------------------- tab 4
@@ -186,16 +186,16 @@ def _region_tab(df: pd.DataFrame):
                  title="How well do the six factors explain happiness in each region? (R-squared)",
                  labels={"r_squared": "R-squared", "region": ""})
     fig.update_layout(height=340, margin=dict(l=0, r=0, t=50, b=0))
-    st.plotly_chart(fig, width="stretch")
+    st.plotly_chart(fig, use_container_width=True)
 
     heat = res[FACTOR_COLS].rename(columns=FACTORS)
     fig2 = px.imshow(heat, text_auto=".2f", aspect="auto", color_continuous_scale="RdBu",
                      color_continuous_midpoint=0, title="What matters most in each region (standardized coefficients)")
     fig2.update_layout(height=380, margin=dict(l=0, r=0, t=50, b=0))
-    st.plotly_chart(fig2, width="stretch")
+    st.plotly_chart(fig2, use_container_width=True)
 
     st.dataframe(res[["n_obs", "r_squared"]].rename(columns={"n_obs": "Country-year rows", "r_squared": "R-squared"})
-                 .style.format({"R-squared": "{:.3f}"}), width="stretch")
+                 .style.format({"R-squared": "{:.3f}"}), use_container_width=True)
     if excluded:
         names = ", ".join(f"{r} ({n} rows)" for r, n in excluded)
         st.caption(f"Excluded as too small for a six-factor regression (under {MIN_REGION_OBS} rows): {names}. "
