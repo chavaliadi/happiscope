@@ -142,7 +142,7 @@ def render():
                 )
                 fig_elbow.add_vline(x=k, line_dash="dash", line_color="#d95f02", annotation_text=f"Selected K={k}")
                 fig_elbow.update_layout(height=280, margin=dict(l=0, r=0, t=40, b=0))
-                st.plotly_chart(fig_elbow, use_container_width=True)
+                st.plotly_chart(fig_elbow, width="stretch")
             with col_r:
                 fig_sil = px.line(
                     diag_df, x="K", y="Silhouette Score", markers=True,
@@ -150,7 +150,7 @@ def render():
                 )
                 fig_sil.add_vline(x=k, line_dash="dash", line_color="#d95f02", annotation_text=f"Selected K={k}")
                 fig_sil.update_layout(height=280, margin=dict(l=0, r=0, t=40, b=0))
-                st.plotly_chart(fig_sil, use_container_width=True)
+                st.plotly_chart(fig_sil, width="stretch")
             st.caption("Note: Silhouette scores in social science panel surveys typically range between 0.20 and 0.40 due to continuous, overlapping distributions.")
 
     # ------------------------------------------------------------- PCA Visualization
@@ -184,7 +184,7 @@ def render():
     )
     fig_pca.update_traces(marker=dict(size=10, opacity=0.85, line=dict(width=0.5, color="#333")))
     fig_pca.update_layout(height=480, margin=dict(l=0, r=0, t=40, b=0), legend_title_text="")
-    st.plotly_chart(fig_pca, use_container_width=True)
+    st.plotly_chart(fig_pca, width="stretch")
     st.caption("Hover over any dot to view country name, region, happiness score, and all six underlying factor values. "
                "Axes are mathematical projections of the 6 dimensions onto 2 orthogonal axes, not direct real-world units.")
 
@@ -197,7 +197,7 @@ def render():
 
     st.dataframe(
         prof_summary.style.format({"Avg Life Ladder": "{:.2f}"}),
-        use_container_width=True,
+        width="stretch",
     )
 
     melted_prof = prof_means.melt(id_vars="cluster", var_name="Factor", value_name="Mean Value")
@@ -215,7 +215,7 @@ def render():
         category_orders={"cluster": [f"Cluster {i+1}" for i in range(k)]},
     )
     fig_bar.update_layout(height=400, margin=dict(l=0, r=0, t=40, b=0), legend_title_text="")
-    st.plotly_chart(fig_bar, use_container_width=True)
+    st.plotly_chart(fig_bar, width="stretch")
     st.caption("Clusters represent structural groupings (e.g. high GDP and strong social support vs lower resources with high freedom). "
                "Cluster names are neutral numeric labels to avoid subjective stereotyping.")
 
@@ -247,7 +247,7 @@ def render():
             f"{c_cluster} Average": "{:.2f}",
             "Diff vs Cluster Avg": "{:+.2f}",
         }),
-        use_container_width=True,
+        width="stretch",
     )
 
     # ------------------------------------------------------------- Longitudinal Trends
@@ -278,7 +278,7 @@ def render():
     )
     fig_trend.add_vline(x=base_year, line_dash="dash", line_color="#888", annotation_text=f"Base Year {base_year}")
     fig_trend.update_layout(height=420, margin=dict(l=0, r=0, t=50, b=0), legend_title_text="")
-    st.plotly_chart(fig_trend, use_container_width=True)
+    st.plotly_chart(fig_trend, width="stretch")
 
     st.caption("When survey coverage is sparse in earlier years (e.g. 2005–2007), cluster averages reflect available country observations within each cohort.")
 

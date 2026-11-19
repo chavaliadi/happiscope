@@ -1,0 +1,3 @@
+Specification,Own_Log_GDP_Beta,Own_Log_GDP_p,Regional_Mean_GDP_Beta,Regional_Mean_GDP_p,Direction,Significant_at_05
+Pooled OLS (Country-Clustered SEs),0.332130238480168,8.097173508527062e-07,0.08924743832712452,0.17056082126720207,Regional Spillovers (Positive),False
+Two-Way Fixed Effects (Clustered SEs),0.5543092300279032,6.34881420155524e-07,0.12352830821320387,0.15675952411497163,Regional Spillovers (Positive),False

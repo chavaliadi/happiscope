@@ -98,7 +98,7 @@ HappiScope enforces a transparent complete-case filtering pipeline tailored to e
 
 - **Multivariate Explanatory Modeling (`Factor Breakdown`):** Requires complete observations across all six WHR explanatory factors plus `Life Ladder`. This complete-case filter yields $N = 2,103$ country-year observations across 2005–2023.
 - **Bivariate Income Analysis (`The Debate`):** Requires complete observations only for `Log GDP per capita` and `Life Ladder`. Because observations missing secondary indicators (e.g., corruption or generosity) are retained, the sample size expands to $N = 2,335$ for the pooled panel and $N = 129$ for the cross-sectional 2023 survey year.
-- **Cross-Sectional Clustering (`Clusters & Trends`):** Filters for complete observations across the six explanatory factors within a chosen baseline year (e.g., $N = 110$ complete nations in 2023).
+- **Cross-Sectional Clustering (`Clusters & Trends`):** Filters for complete observations across the six explanatory factors within a chosen baseline year (e.g., $N = 120$ complete nations in 2023).
 - **Longitudinal Cohort Tracking:** Groups established in the baseline clustering year are mapped to fixed cohorts and followed across all available years (2005–2023), averaging all available country scores within that cohort for each year.
 
 ---
@@ -128,19 +128,21 @@ To test whether linear regression assumptions obscure complex non-linear interac
 ### Spearman Rank Correlation
 To assess structural agreement between the econometric model and machine learning model, HappiScope calculates the Spearman rank correlation ($\rho$) between standardized OLS weights and Random Forest permutation importances:
 
-$$\rho = 0.89 \quad (p = 0.019)$$
+$$\rho = 0.886 \quad (p = 0.0188)$$
 
 This strong positive rank correlation indicates substantial agreement between the relative factor rankings produced by the standardized OLS coefficients and Random Forest permutation importances. In this dataset, economic productivity, social support, and healthy life expectancy represent the strongest empirical associations with national happiness scores.
+
+> **Methodological Note on Model Ranking Comparison:** In the project's exploratory phase (`happiscope.ipynb`, Cell 12), the initial comparison between raw unstandardized OLS coefficients and Random Forest Mean Decrease in Impurity (MDI) importances produced a negative rank correlation ($\rho = -0.09, p = 0.872$). That initial specification was mathematically invalid because raw OLS coefficients reflect disparate physical measurement scales (e.g. years of life expectancy vs logged purchasing dollars vs 0–1 binary survey shares) while MDI importances suffer from severe empirical bias toward continuous, high-cardinality predictors. Placing both models on scale-invariant foundations—$z$-score standardized regression weights ($\beta^*$) and test-set permutation feature importance over held-out folds—resolves the unit artifact and reveals robust structural agreement ($\rho = 0.886, p = 0.0188$). Both values are preserved in project history for complete auditability.
 
 ### K-Means Clustering
 To uncover exploratory country groupings based on their six-factor profiles without circularity, HappiScope implements unsupervised K-Means clustering on the six standardized explanatory drivers:
 - **Features:** Standardized Log GDP, Social support, Healthy life expectancy, Freedom, Generosity, and Perceptions of corruption.
 - **Outcome Exclusion:** `Life Ladder` and geographical identifiers are strictly excluded from the clustering matrix.
-- **Hyperparameters:** Evaluates user-selectable cluster counts $K \in [3, 6]$ (default $K = 4$) with `random_state=42` and `n_init=10`.
+- **Hyperparameters:** Evaluates user-selectable cluster counts $K \in [3, 6]$ (default $K = 4$) with `random_state=42` and `n_init=10`. While silhouette diagnostics peak at $K=2$ ($0.329$) and $K=3$ ($0.322$), $K=4$ ($0.268$) is retained as the default analytical partition because it separates nations into four distinct structural policy archetypes (e.g., high-wealth/high-support vs. transitional/low-institutional-trust vs. developing/resource-constrained) rather than a coarse binary rich/poor division.
 - **Diagnostics:** Computes Within-Cluster Sum of Squares (Inertia/WCSS) and Silhouette Score for the chosen $K$, accompanied by a diagnostic curve across $K \in [2, 8]$.
 
 ### Principal Component Analysis (PCA)
-For intuitive visualization of high-dimensional clusters, the 6-dimensional factor space is projected onto 2 orthogonal axes using `PCA(n_components=2, random_state=42)`. The first two principal components capture the majority of factor variance ($\approx 53.6\%$ and $15.5\%$, respectively). 
+For intuitive visualization of high-dimensional clusters, the 6-dimensional factor space is projected onto 2 orthogonal axes using `PCA(n_components=2, random_state=42)`. The first two principal components capture the majority of factor variance ($50.8\%$ and $19.8\%$, respectively, explaining $70.6\%$ cumulative variance in 2023). 
 
 > **Interpretation Warning:** PCA axes are mathematical dimensions of maximum variance, not standalone real-world traits.
 
@@ -249,7 +251,7 @@ Key outputs produced by the HappiScope platform include:
 | **Top Standardized Drivers** | Log GDP per capita ($\beta^* \approx +0.411$) and Social support ($\beta^* \approx +0.325$) represent the strongest linear associations. |
 | **Random Forest Validation** | Test-set $R^2 \approx 0.866$ on held-out 20% test data ($N = 421$). Permutation importance indicates Log GDP as the dominant feature. |
 | **Model Agreement** | Spearman rank correlation $\rho = 0.89$ ($p = 0.019$) between standardized OLS weights and Random Forest permutation importances. |
-| **K-Means Profiles ($K=4$)** | Identifies distinct exploratory factor groupings (e.g., high-wealth/high-support vs. low-resource/high-autonomy nations) at $N = 110$ complete countries in 2023. |
+| **K-Means Profiles ($K=4$)** | Identifies distinct exploratory factor groupings (e.g., high-wealth/high-support vs. low-resource/high-autonomy nations) at $N = 120$ complete countries in 2023. |
 | **Longitudinal Cohorts** | Demonstrates that structural factor cohorts formed in 2023 maintain parallel, distinct happiness tiers across 2005–2023. |
 | **Piecewise Income Model** | Breakpoint estimated at $\tau^* \approx 9.58$ ($\approx \$14,400$ PPP GDP/capita). Below $\tau$: slope $= +0.565$; above $\tau$: slope $= +1.081$ ($\Delta R^2 = +0.0195$, $\text{AIC} = 4811.8$ vs linear $4930.9$). |
 
@@ -280,6 +282,15 @@ happiscope/
 ├── README.md                  # Comprehensive project documentation
 ├── .gitignore                 # Git ignore rules (cache, virtual environments)
 ├── happiscope.ipynb           # Localized exploratory Jupyter notebook
+├── analysis/                  # Standalone pure econometric and ML validation routines
+│   ├── __init__.py                  # Public exports
+│   ├── panel_models.py              # Pooled OLS, Between, Two-Way FE, Mundlak
+│   ├── breakpoint.py                # Multivariate piecewise OLS and block bootstrap
+│   ├── validation.py                # GroupKFold and forward-chaining temporal CV
+│   ├── affect.py                    # Evaluative vs emotional affect models
+│   ├── residuals.py                 # Country fixed effects and regional ANOVA
+│   └── relative_income.py           # Relative income and social comparison tests
+├── run_analysis.py            # Headless execution script dumping outputs and figures
 ├── data/
 │   ├── happiscope_master.csv        # WHR panel dataset (165 countries, 2005–2023)
 │   ├── country_region.csv           # Country-to-region mapping and ISO-3 codes
@@ -289,8 +300,7 @@ happiscope/
     ├── overview.py                  # Page 1: World map and global overview
     ├── factor_breakdown.py          # Page 2: OLS decomposition & RF validation
     ├── clusters_and_trends.py       # Page 3: K-Means clustering, PCA, & cohort trends
-    ├── the_debate.py                # Page 4: Piecewise regression on income satiation
-    └── coming_soon.py               # Fallback placeholder component
+    └── the_debate.py                # Page 4: Piecewise regression on income satiation
 ```
 
 ---
@@ -391,9 +401,10 @@ To run the notebook locally:
 
 - **Observational Nature:** All analyses reflect observational cross-national survey data. Coefficients represent statistical associations, not individual causal mechanisms.
 - **Ecological Fallacy:** Relationships observed at the aggregate country level (e.g., national average GDP vs. average happiness) cannot be directly mapped to individual persons within those nations.
-- **Sample Selection Differences:** Due to survey coverage variations across indicators, different analyses evaluate different complete-case samples ($N = 2,103$ for multivariate OLS, $N = 2,335$ for bivariate income models, and $N = 110$ for 2023 clustering).
+- **Sample Selection Differences:** Due to survey coverage variations across indicators, different analyses evaluate different complete-case samples ($N = 2,103$ for multivariate OLS, $N = 2,335$ for bivariate income models, and $N = 120$ for 2023 clustering).
+- **Non-Random Complete-Case Attrition Bias:** Enforcing complete-case observations drops 260 country-years ($11.00\%$) globally and 18 nations ($13.04\%$) in 2023. Missingness is systematically non-random: dropped records are heavily concentrated in Asia (176 of 260 dropped rows, $67.7\%$), where dropped observations show higher mean Log GDP ($9.90$ vs $9.29$ retained) and higher mean Life Ladder ($5.62$ vs $5.18$ retained) due to selective missingness in specific governance and donation indicators. Complete-case analyses therefore slightly under-represent specific Asian and Gulf economies.
 - **Cluster Sensitivity:** K-Means clustering depends on feature selection, standardization, and the choice of baseline year; clusters represent exploratory factor groupings rather than fixed sociological taxonomies.
-- **PCA Dimensionality:** While the 2D PCA projection explains over $69\%$ of feature variance, approximately $31\%$ of multidimensional information is not captured in the 2D visualization plane.
+- **PCA Dimensionality:** While the 2D PCA projection explains over $70\%$ of feature variance ($50.8\%$ PC1, $19.8\%$ PC2 in 2023), approximately $29\%$ of multidimensional information is not captured in the 2D visualization plane.
 - **Income Metric Scope:** `Log GDP per capita` captures purchasing-power economic output, but does not measure wealth inequality (Gini coefficient), cost of living spikes, or distribution of social safety benefits.
 
 ---

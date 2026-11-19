@@ -1,0 +1,2 @@
+wald_statistic,wald_pvalue,n_obs,n_countries,durbin_watson_pooled,durbin_watson_between,durbin_watson_within_fe,easterlin_gdp_between_to_within_ratio
+16.78142946020185,0.010120996203776605,2103,155,0.5650359463547839,2.00958262028082,1.1722637269272114,0.5520856059838087

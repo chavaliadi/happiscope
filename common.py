@@ -46,8 +46,8 @@ def load_importance() -> pd.DataFrame:
 
 
 def complete_cases(df: pd.DataFrame) -> pd.DataFrame:
-    """Rows with no missing value in the target or any of the six factors."""
-    return df[FACTOR_COLS + [TARGET]].dropna()
+    """Rows with no missing value in the target or any of the six factors, preserving metadata columns."""
+    return df.dropna(subset=FACTOR_COLS + [TARGET]).copy()
 
 
 # ---------------------------------------------------------------- models
