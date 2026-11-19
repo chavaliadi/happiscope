@@ -4,6 +4,7 @@ Pure functions providing econometric panel modeling, leak-free machine learning 
 multivariate piecewise regressions, affect decomposition, and social comparison tests.
 """
 from analysis.panel_models import (
+    bivariate_panel_models,
     pooled_ols,
     between_estimator,
     within_fe,
@@ -29,6 +30,7 @@ from analysis.relative_income import (
 )
 
 __all__ = [
+    "bivariate_panel_models",
     "pooled_ols",
     "between_estimator",
     "within_fe",

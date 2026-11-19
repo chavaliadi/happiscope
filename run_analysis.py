@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 
 from common import FACTOR_COLS, FACTORS, TARGET, load_data
-from analysis.panel_models import comparison_table, mundlak
+from analysis.panel_models import bivariate_panel_models, comparison_table, mundlak
 from analysis.breakpoint import (
     multivariate_piecewise,
     block_bootstrap_tau,
@@ -46,8 +46,13 @@ def main():
     
     # ------------------------------------------------------------- 1. Panel Econometrics
     print("\n[1/6] Running Panel Econometric Models...")
+    biv_res = bivariate_panel_models(df)
+    biv_res["summary_table"].to_csv(out_dir / "bivariate_panel_models.csv", index=False)
+    print(f"-> Exported bivariate_panel_models.csv (Easterlin Ratio={biv_res['easterlin_ratio']:.4f}, Secular Trend Ratio={biv_res['secular_trend_ratio']:.4f})")
+    
     comp_df, gdp_ratio, dw_dict = comparison_table(df)
     comp_df.to_csv(out_dir / "panel_models_comparison.csv", index=False)
+    comp_df.to_csv(out_dir / "multivariate_partial_effects.csv", index=False)
     
     mundlak_res = mundlak(df)
     mundlak_summary = pd.DataFrame([{
@@ -58,10 +63,12 @@ def main():
         "durbin_watson_pooled": dw_dict["Pooled OLS"],
         "durbin_watson_between": dw_dict["Between Estimator"],
         "durbin_watson_within_fe": dw_dict["Within FE"],
-        "easterlin_gdp_between_to_within_ratio": gdp_ratio,
+        "bivariate_easterlin_ratio": biv_res["easterlin_ratio"],
+        "bivariate_secular_ratio": biv_res["secular_trend_ratio"],
+        "multivariate_gdp_between_to_within_ratio": gdp_ratio,
     }])
     mundlak_summary.to_csv(out_dir / "mundlak_specification.csv", index=False)
-    print(f"-> Exported panel_models_comparison.csv and mundlak_specification.csv (Ratio={gdp_ratio:.4f})")
+    print(f"-> Exported panel_models_comparison.csv and mundlak_specification.csv (Multivariate Partial Ratio={gdp_ratio:.4f})")
     
     # ------------------------------------------------------------- 2. Multivariate Piecewise & Bootstrap
     print("\n[2/6] Running Multivariate Piecewise Regression & Bootstrap...")
@@ -118,20 +125,25 @@ def main():
     
     # ------------------------------------------------------------- 5. Country Residuals & ANOVA
     print("\n[5/6] Running Residual & Fixed Effects Analysis...")
-    resid_res = analyze_residuals(df)
+    resid_res = analyze_residuals(df, min_obs=8)
     resid_res["top_15_overperformers"].to_csv(out_dir / "top_15_overperformers.csv")
     resid_res["top_15_underperformers"].to_csv(out_dir / "top_15_underperformers.csv")
     resid_res["regional_table"].to_csv(out_dir / "regional_residual_effects.csv", index=False)
+    pd.DataFrame({"excluded_country": resid_res["excluded_countries"]}).to_csv(out_dir / "excluded_countries_under_8_obs.csv", index=False)
     
     resid_summary = pd.DataFrame([{
         "regional_anova_f": resid_res["regional_anova_f"],
         "regional_anova_p": resid_res["regional_anova_p"],
+        "regional_anova_f_raw": resid_res["regional_anova_f_raw"],
+        "regional_anova_p_raw": resid_res["regional_anova_p_raw"],
         "persistence_autocorr": resid_res["persistence_autocorr"],
-        "n_countries": resid_res["n_countries"],
+        "total_countries": resid_res["total_countries"],
+        "n_countries_analyzed": resid_res["n_countries"],
+        "n_excluded_countries": resid_res["n_excluded_countries"],
         "n_obs": resid_res["n_obs"],
     }])
     resid_summary.to_csv(out_dir / "residual_diagnostics_summary.csv", index=False)
-    print("-> Exported residual diagnostics and top/bottom performers.")
+    print(f"-> Exported residual diagnostics: {resid_res['n_countries']} countries retained, {resid_res['n_excluded_countries']} excluded (<8 obs).")
     
     # ------------------------------------------------------------- 6. Relative Income & Social Comparison
     print("\n[6/6] Running Relative Income & Social Comparison Models...")
@@ -178,19 +190,21 @@ def main():
     save_figure_multi_format(fig2, fig_dir / "fig2_breakpoint_bootstrap_and_stability")
     
     # Figure 3: Leak-Free Validation Benchmarks
-    fig3, ax3 = plt.subplots(figsize=(9, 5))
+    fig3, ax3 = plt.subplots(figsize=(11, 5.5))
     val_table = val_res["summary_table"]
-    labels = [f"{row['Model']}\n({row['Protocol'].split()[0]})" for _, row in val_table.iterrows()]
+    labels = [f"{row['Model'].replace(' (contemporaneous)', '').replace(' (has access to lagged outcome)', '').replace(' (with lagged outcome)', ' + Lag')}\n({row['Protocol'].split()[0]})" for _, row in val_table.iterrows()]
     r2_vals = val_table["R2"].values
-    bars = ax3.bar(labels, r2_vals, color=["#4e79a7", "#59a14f", "#e15759", "#4e79a7", "#59a14f"])
+    bar_colors = ["#4e79a7", "#59a14f", "#e15759", "#76b7b2", "#edc948", "#b07aa1", "#ff9da7"][:len(val_table)]
+    bars = ax3.bar(labels, r2_vals, color=bar_colors)
     ax3.axhline(0.8663, color="#888888", linestyle=":", label="Old Leaking RF R2 (0.866)")
     for b in bars:
         height = b.get_height()
         ax3.annotate(f"{height:.3f}", xy=(b.get_x() + b.get_width() / 2, height),
-                     xytext=(0, 3), textcoords="offset points", ha="center", va="bottom")
+                     xytext=(0, 3), textcoords="offset points", ha="center", va="bottom", fontsize=8)
     ax3.set_ylabel("Test R-squared")
-    ax3.set_title("Predictive Performance Under Leak-Free Validation Protocols")
-    ax3.set_ylim(0, 1.0)
+    ax3.set_title("Predictive Performance Under Leak-Free Validation Protocols (with Lagged Outcome Benchmarks)")
+    ax3.set_ylim(0, 1.05)
+    ax3.tick_params(axis="x", rotation=15)
     ax3.legend()
     save_figure_multi_format(fig3, fig_dir / "fig3_leak_free_model_benchmarks")
     
@@ -216,10 +230,11 @@ def main():
     reg_tab = resid_res["regional_table"]
     y_pos = np.arange(len(reg_tab))
     ax5.errorbar(reg_tab["mean"], y_pos, xerr=reg_tab["ci95_margin"], fmt="o", color="#4e79a7", ecolor="#e15759", elinewidth=2, capsize=4)
+    ax5.axvline(0, color="#888888", linestyle="--", linewidth=0.8)
     ax5.set_yticks(y_pos)
     ax5.set_yticklabels(reg_tab["region"])
-    ax5.set_xlabel("Mean Country Fixed Effect (Baseline Well-Being vs 6 Factors)")
-    ax5.set_title(f"Regional Differences in Baseline Well-Being (ANOVA F={resid_res['regional_anova_f']:.2f}, p={resid_res['regional_anova_p']:.2e})")
+    ax5.set_xlabel("Mean Country Fixed Effect (Deviation from Global Mean)")
+    ax5.set_title(f"Regional Country Fixed Effects (ANOVA F={resid_res['regional_anova_f']:.2f}, p={resid_res['regional_anova_p']:.2e})")
     save_figure_multi_format(fig5, fig_dir / "fig5_regional_fixed_effects_ci")
     
     print("\nAll analyses executed and all figures saved successfully!")

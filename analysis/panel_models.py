@@ -14,6 +14,111 @@ from linearmodels.panel import PanelOLS
 from common import FACTOR_COLS, TARGET, complete_cases
 
 
+def bivariate_panel_models(df: pd.DataFrame) -> Dict[str, Any]:
+    """Bivariate panel models of Life Ladder on Log GDP per capita ONLY (no controls).
+
+    Returns:
+      1. Pooled OLS
+      2. Between Estimator (country means)
+      3. Within Estimator (Country fixed effects only, country-clustered SE)
+      4. Within Estimator (Country + Year fixed effects, country-clustered SE)
+      Easterlin Ratio: Between beta / Within (Country-FE only) beta
+      Secular-Trend Ratio: Between beta / Within (Two-Way FE) beta
+    """
+    d = complete_cases(df)
+    
+    # 1. Pooled OLS
+    X_pooled = sm.add_constant(d["Log GDP per capita"])
+    m_pooled = sm.OLS(d[TARGET], X_pooled).fit()
+    
+    # 2. Between Estimator
+    c_means = d.groupby("Country name")[[TARGET, "Log GDP per capita"]].mean()
+    X_between = sm.add_constant(c_means["Log GDP per capita"])
+    m_between = sm.OLS(c_means[TARGET], X_between).fit()
+    
+    # 3. Within: Country FE only
+    p_data = d.set_index(["Country name", "year"])
+    m_within_c = PanelOLS(
+        p_data[TARGET],
+        p_data[["Log GDP per capita"]],
+        entity_effects=True,
+        time_effects=False,
+    ).fit(cov_type="clustered", cluster_entity=True)
+    
+    # 4. Within: Country + Year FE
+    m_within_cy = PanelOLS(
+        p_data[TARGET],
+        p_data[["Log GDP per capita"]],
+        entity_effects=True,
+        time_effects=True,
+    ).fit(cov_type="clustered", cluster_entity=True)
+    
+    beta_pooled = float(m_pooled.params["Log GDP per capita"])
+    beta_between = float(m_between.params["Log GDP per capita"])
+    beta_within_c = float(m_within_c.params["Log GDP per capita"])
+    beta_within_cy = float(m_within_cy.params["Log GDP per capita"])
+    
+    easterlin_ratio = beta_between / beta_within_c
+    secular_ratio = beta_between / beta_within_cy
+    
+    table_df = pd.DataFrame([
+        {
+            "Estimator": "1. Pooled OLS",
+            "Specification": "Bivariate (Log GDP only)",
+            "Beta": beta_pooled,
+            "SE": float(m_pooled.bse["Log GDP per capita"]),
+            "p_value": float(m_pooled.pvalues["Log GDP per capita"]),
+            "R2": float(m_pooled.rsquared),
+            "N_obs": len(d),
+            "N_countries": int(d["Country name"].nunique()),
+        },
+        {
+            "Estimator": "2. Between Estimator",
+            "Specification": "Country means (cross-sectional total)",
+            "Beta": beta_between,
+            "SE": float(m_between.bse["Log GDP per capita"]),
+            "p_value": float(m_between.pvalues["Log GDP per capita"]),
+            "R2": float(m_between.rsquared),
+            "N_obs": len(c_means),
+            "N_countries": len(c_means),
+        },
+        {
+            "Estimator": "3. Within FE (Country only)",
+            "Specification": "Country FE, clustered SE (Easterlin test)",
+            "Beta": beta_within_c,
+            "SE": float(m_within_c.std_errors["Log GDP per capita"]),
+            "p_value": float(m_within_c.pvalues["Log GDP per capita"]),
+            "R2": float(m_within_c.rsquared_within),
+            "N_obs": int(m_within_c.nobs),
+            "N_countries": int(m_within_c.entity_info.total),
+        },
+        {
+            "Estimator": "4. Within FE (Country + Year)",
+            "Specification": "Two-way FE (removes secular global trend)",
+            "Beta": beta_within_cy,
+            "SE": float(m_within_cy.std_errors["Log GDP per capita"]),
+            "p_value": float(m_within_cy.pvalues["Log GDP per capita"]),
+            "R2": float(m_within_cy.rsquared_within),
+            "N_obs": int(m_within_cy.nobs),
+            "N_countries": int(m_within_cy.entity_info.total),
+        },
+    ])
+    
+    return {
+        "summary_table": table_df,
+        "beta_pooled": beta_pooled,
+        "beta_between": beta_between,
+        "beta_within_country_only": beta_within_c,
+        "beta_within_twoway": beta_within_cy,
+        "easterlin_ratio": easterlin_ratio,
+        "secular_trend_ratio": secular_ratio,
+        "model_pooled": m_pooled,
+        "model_between": m_between,
+        "model_within_country": m_within_c,
+        "model_within_twoway": m_within_cy,
+    }
+
+
 def pooled_ols(df: pd.DataFrame) -> Dict[str, Any]:
     """Current pooled OLS specification (unchanged)."""
     d = complete_cases(df)

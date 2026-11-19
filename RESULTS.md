@@ -6,6 +6,19 @@ This document serves as the authoritative Numbers Register for HappiScope. Every
 
 ## 1. Panel Econometric Models
 
+### Bivariate Specifications (Easterlin Paradox Test: Life Ladder ~ Log GDP per capita only)
+
+| Claim / Metric | Value | Model / Specification | Producing Function | Source File / Output Artifact |
+|---|---|---|---|---|
+| Bivariate Pooled OLS Log GDP Beta | `+0.7750` | Pooled OLS (Complete Cases, N=2,103, SE=0.0132, p<0.0001, $R^2=0.6198$) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
+| Bivariate Between Estimator Log GDP Beta | `+0.7454` | Between Estimator (Country Means, N=155, SE=0.0398, p<0.0001, $R^2=0.6964$) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
+| Bivariate Within FE (Country only) Beta | `+0.7229` | Within Country FE (Entity Clustered SE=0.1526, p=2.32e-06, $R^2_{\text{within}}=0.0974$) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
+| Bivariate Within FE (Country + Year) Beta | `+0.7175` | Two-Way FE (Entity Clustered SE=0.1807, p=7.43e-05, $R^2_{\text{within}}=0.0974$) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
+| Easterlin Ratio (Between / Within Country-Only) | `1.0311` | Ratio of Between Beta (0.7454) to Within Country-FE Beta (0.7229) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
+| Secular-Trend-Absorbed Ratio (Between / Within Two-Way) | `1.0388` | Ratio of Between Beta (0.7454) to Within Two-Way FE Beta (0.7175) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
+
+### Multivariate Specifications (Conditional / Partial Effects Controlling for Other 5 WHR Drivers)
+
 | Claim / Metric | Value | Model / Specification | Producing Function | Source File / Output Artifact |
 |---|---|---|---|---|
 | Pooled OLS Log GDP Beta | `+0.3566` | Pooled OLS (Complete Cases, N=2,103) | `analysis.panel_models:pooled_ols` | `outputs/panel_models_comparison.csv` |
@@ -31,7 +44,7 @@ This document serves as the authoritative Numbers Register for HappiScope. Every
 | Within FE Generosity Beta | `+0.6206` | Two-Way Fixed Effects (Entity-Clustered) | `analysis.panel_models:within_fe` | `outputs/panel_models_comparison.csv` |
 | Within FE Corruption Beta | `-0.8282` | Two-Way Fixed Effects (Entity-Clustered) | `analysis.panel_models:within_fe` | `outputs/panel_models_comparison.csv` |
 | Within FE Durbin-Watson | `1.1723` | Two-Way Fixed Effects Residual Autocorrelation | `analysis.panel_models:within_fe` | `outputs/mundlak_specification.csv` |
-| Log GDP Between-to-Within Ratio | `0.5521` | Ratio of Between Beta to Within Beta (0.3106 / 0.5626) | `analysis.panel_models:comparison_table` | `outputs/mundlak_specification.csv` |
+| Multivariate Partial Between-to-Within Ratio | `0.5521` | Ratio of Partial Between Beta to Within Beta (0.3106 / 0.5626) | `analysis.panel_models:comparison_table` | `outputs/mundlak_specification.csv` |
 | Mundlak Joint Wald Statistic | `16.7814` | Wald Chi-Square Test ($df=6$) | `analysis.panel_models:mundlak` | `outputs/mundlak_specification.csv` |
 | Mundlak Joint Wald p-value | `0.0101` | Rejection of Within == Between Equality | `analysis.panel_models:mundlak` | `outputs/mundlak_specification.csv` |
 
@@ -63,16 +76,19 @@ This document serves as the authoritative Numbers Register for HappiScope. Every
 | Claim / Metric | Value | Model / Specification | Producing Function | Source File / Output Artifact |
 |---|---|---|---|---|
 | Old Leaking Random Split RF $R^2$ | `0.8663` | Random Row 80/20 Split (Information Leakage) | `happiscope.ipynb` (Historical Baseline) | `data/importance_comparison.csv` |
-| Temporal Split Test OLS $R^2$ | `0.7580` | Forward-Chaining Temporal Split (Test 2019–2023) | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
-| Temporal Split Test OLS RMSE | `0.5495` | Forward-Chaining Temporal Split (N=595) | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
-| Temporal Split Test RF $R^2$ | `0.7779` | Forward-Chaining Temporal Split (Test 2019–2023) | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
-| Temporal Split Test RF RMSE | `0.5265` | Forward-Chaining Temporal Split (N=595) | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
-| Temporal Split Naive Baseline $R^2$ | `0.8671` | Country Prior-Year Value Persistence ($Y_{i, t-1}$) | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
-| Temporal Split Naive Baseline RMSE | `0.4072` | Country Prior-Year Persistence (N=595) | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
-| Temporal Split Naive Baseline MAE | `0.2876` | Country Prior-Year Persistence (N=595) | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
-| GroupKFold OLS Mean $R^2$ | `0.7065` | 5-Fold Cross-Validation Grouped by Country | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
+| Temporal Split Test OLS (contemporaneous) $R^2$ | `0.7604` | Forward-Chaining Temporal Split (Test 2019–2023, 6 WHR Drivers) | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
+| Temporal Split Test OLS (contemporaneous) RMSE | `0.5468` | Forward-Chaining Temporal Split (Test N=595, MAE=0.4132) | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
+| Temporal Split Test RF (contemporaneous) $R^2$ | `0.7731` | Forward-Chaining Temporal Split (Test 2019–2023, 6 WHR Drivers) | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
+| Temporal Split Test RF (contemporaneous) RMSE | `0.5321` | Forward-Chaining Temporal Split (Test N=595, MAE=0.4002) | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
+| Temporal Split Naive Baseline $R^2$ | `0.8671` | Country Prior-Year Value Persistence (has access to lagged outcome $Y_{i, t-1}$) | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
+| Temporal Split Naive Baseline RMSE | `0.4072` | Country Prior-Year Persistence (Test N=595, MAE=0.2876) | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
+| Temporal Split Augmented OLS (with lagged outcome) $R^2$ | `0.8913` | Forward-Chaining Temporal Split (6 WHR Drivers + $Y_{i, t-1}$) | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
+| Temporal Split Augmented OLS RMSE | `0.3682` | Forward-Chaining Temporal Split (Test N=595, MAE=0.2623) | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
+| Temporal Split Augmented RF (with lagged outcome) $R^2$ | `0.8804` | Forward-Chaining Temporal Split (6 WHR Drivers + $Y_{i, t-1}$) | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
+| Temporal Split Augmented RF RMSE | `0.3864` | Forward-Chaining Temporal Split (Test N=595, MAE=0.2759) | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
+| GroupKFold OLS Mean $R^2$ | `0.7065` | 5-Fold Cross-Validation Grouped by Country (N=2,103, MAE=0.4506) | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
 | GroupKFold OLS Mean RMSE | `0.5850` | 5-Fold Cross-Validation Grouped by Country | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
-| GroupKFold RF Mean $R^2$ | `0.6940` | 5-Fold Cross-Validation Grouped by Country | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
+| GroupKFold RF Mean $R^2$ | `0.6940` | 5-Fold Cross-Validation Grouped by Country (N=2,103, MAE=0.4712) | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
 | GroupKFold RF Mean RMSE | `0.6068` | 5-Fold Cross-Validation Grouped by Country | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
 
 ---
@@ -107,18 +123,27 @@ This document serves as the authoritative Numbers Register for HappiScope. Every
 
 ---
 
-## 6. Country Residuals, Fixed Effects & Regional Systematicity
+## 6. Country Effects, Deviations from Global Mean & Regional Systematicity
 
 | Claim / Metric | Value | Model / Specification | Producing Function | Source File / Output Artifact |
 |---|---|---|---|---|
-| Regional ANOVA $F$-Statistic | `9.1716` | One-Way ANOVA of Country Effects by Region ($df=5$) | `analysis.residuals:analyze_residuals` | `outputs/residual_diagnostics_summary.csv` |
-| Regional ANOVA $p$-value | `1.26e-07` | Significant Regional Systematicity in Baseline Happiness | `analysis.residuals:analyze_residuals` | `outputs/residual_diagnostics_summary.csv` |
-| Africa Mean Country Effect | `-1.2425` | Two-Way FE Country Intercept ($95\% \text{ CI: } [-1.3809, -1.1041]$) | `analysis.residuals:analyze_residuals` | `outputs/regional_residual_effects.csv` |
-| Asia Mean Country Effect | `-1.3651` | Two-Way FE Country Intercept ($95\% \text{ CI: } [-1.5067, -1.2235]$) | `analysis.residuals:analyze_residuals` | `outputs/regional_residual_effects.csv` |
-| Europe Mean Country Effect | `-1.1458` | Two-Way FE Country Intercept ($95\% \text{ CI: } [-1.2481, -1.0435]$) | `analysis.residuals:analyze_residuals` | `outputs/regional_residual_effects.csv` |
-| North America Mean Country Effect | `-0.6735` | Two-Way FE Country Intercept ($95\% \text{ CI: } [-0.9325, -0.4146]$) | `analysis.residuals:analyze_residuals` | `outputs/regional_residual_effects.csv` |
-| South America Mean Country Effect | `-0.6595` | Two-Way FE Country Intercept ($95\% \text{ CI: } [-0.8115, -0.5075]$) | `analysis.residuals:analyze_residuals` | `outputs/regional_residual_effects.csv` |
+| Total Countries in Panel | `155` | Complete Cases Panel | `analysis.residuals:analyze_residuals` | `outputs/residual_diagnostics_summary.csv` |
+| Excluded Countries (<8 observations) | `23` | Dropped to prevent small-sample noise (Somalia, Qatar, etc.) | `analysis.residuals:analyze_residuals` | `outputs/excluded_countries_under_8_obs.csv` |
+| Analyzed Countries (>=8 observations) | `132` | Final Stable Sample for Fixed Effects Ranking | `analysis.residuals:analyze_residuals` | `outputs/residual_diagnostics_summary.csv` |
+| Regional ANOVA $F$-Statistic | `4.7126` | One-Way ANOVA of Centered Country Effects by Region ($df=5$) | `analysis.residuals:analyze_residuals` | `outputs/residual_diagnostics_summary.csv` |
+| Regional ANOVA $p$-value | `0.000558` | Significant Regional Systematicity ($p = 5.58 \times 10^{-4}$) | `analysis.residuals:analyze_residuals` | `outputs/residual_diagnostics_summary.csv` |
+| Regional ANOVA Invariance ($F_{\text{raw}} = F_{\text{centered}}$) | `Identical` | Raw F=4.7126 vs Centered F=4.7126 (Difference $< 10^{-14}$) | `analysis.residuals:analyze_residuals` | `outputs/residual_diagnostics_summary.csv` |
+| North America Mean Country Effect | `+0.3998` | Deviation from Global Mean ($95\% \text{ CI: } [+0.1000, +0.6995], N=12$) | `analysis.residuals:analyze_residuals` | `outputs/regional_residual_effects.csv` |
+| South America Mean Country Effect | `+0.3547` | Deviation from Global Mean ($95\% \text{ CI: } [+0.1470, +0.5623], N=10$) | `analysis.residuals:analyze_residuals` | `outputs/regional_residual_effects.csv` |
+| Oceania Mean Country Effect | `+0.1489` | Deviation from Global Mean ($95\% \text{ CI: } [-0.1548, +0.4527], N=2$) | `analysis.residuals:analyze_residuals` | `outputs/regional_residual_effects.csv` |
+| Europe Mean Country Effect | `+0.0160` | Deviation from Global Mean ($95\% \text{ CI: } [-0.1000, +0.1320], N=39$) | `analysis.residuals:analyze_residuals` | `outputs/regional_residual_effects.csv` |
+| Africa Mean Country Effect | `-0.1121` | Deviation from Global Mean ($95\% \text{ CI: } [-0.2630, +0.0389], N=37$) | `analysis.residuals:analyze_residuals` | `outputs/regional_residual_effects.csv` |
+| Asia Mean Country Effect | `-0.1600` | Deviation from Global Mean ($95\% \text{ CI: } [-0.3235, +0.0035], N=32$) | `analysis.residuals:analyze_residuals` | `outputs/regional_residual_effects.csv` |
 | Within-Country Residual Lag-1 Autocorr | `0.4519` | Longitudinal Persistence of Idiosyncratic Residuals ($N=1,948$ pairs) | `analysis.residuals:analyze_residuals` | `outputs/residual_diagnostics_summary.csv` |
-| Top 1 Over-Performer | `Costa Rica` | Country Effect `=-0.0101` ($N=18$ years) | `analysis.residuals:analyze_residuals` | `outputs/top_15_overperformers.csv` |
-| Top 1 Under-Performer | `Botswana` | Country Effect `=-2.8188` ($N=14$ years) | `analysis.residuals:analyze_residuals` | `outputs/top_15_underperformers.csv` |
+| Top 1 Over-Performer | `Mexico` | Deviation `= +1.0915` ($N=17$ years, North America) | `analysis.residuals:analyze_residuals` | `outputs/top_15_overperformers.csv` |
+| Top 2 Over-Performer | `Israel` | Deviation `= +1.0798` ($N=17$ years, Asia) | `analysis.residuals:analyze_residuals` | `outputs/top_15_overperformers.csv` |
+| Top 3 Over-Performer | `Costa Rica` | Deviation `= +0.9879` ($N=18$ years, North America) | `analysis.residuals:analyze_residuals` | `outputs/top_15_overperformers.csv` |
+| Top 1 Under-Performer | `Botswana` | Deviation `= -1.8066` ($N=14$ years, Africa) | `analysis.residuals:analyze_residuals` | `outputs/top_15_underperformers.csv` |
+| Top 2 Under-Performer | `Sri Lanka` | Deviation `= -1.3909` ($N=17$ years, Asia) | `analysis.residuals:analyze_residuals` | `outputs/top_15_underperformers.csv` |
+| Top 3 Under-Performer | `Tanzania` | Deviation `= -0.9512` ($N=18$ years, Africa) | `analysis.residuals:analyze_residuals` | `outputs/top_15_underperformers.csv` |
 

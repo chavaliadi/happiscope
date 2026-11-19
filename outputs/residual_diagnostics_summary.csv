@@ -1,2 +1,2 @@
-regional_anova_f,regional_anova_p,persistence_autocorr,n_countries,n_obs
-9.171593838824515,1.2562182326464923e-07,0.451900760703811,155,2103
+regional_anova_f,regional_anova_p,regional_anova_f_raw,regional_anova_p_raw,persistence_autocorr,total_countries,n_countries_analyzed,n_excluded_countries,n_obs
+4.712606665514178,0.0005583205526670092,4.712606665514171,0.000558320552667013,0.451900760703811,155,132,23,2103

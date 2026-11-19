@@ -16,56 +16,90 @@ from common import FACTOR_COLS, TARGET, complete_cases
 
 
 def evaluate_leak_free_models(df: pd.DataFrame, n_splits: int = 5, seed: int = 42) -> Dict[str, Any]:
-    """Evaluates OLS, RandomForest, and Naive Prior-Year baseline under leak-free protocols."""
+    """Evaluates OLS, RandomForest, and Naive Prior-Year baseline under leak-free protocols,
+
+    including augmented models with lagged outcome for like-for-like comparison.
+    """
     d = complete_cases(df).sort_values(["Country name", "year"]).copy()
     
     # Construct naive previous-year prediction (lag-1 within country)
-    d["naive_pred"] = d.groupby("Country name")[TARGET].shift(1)
+    d["lag_target"] = d.groupby("Country name")[TARGET].shift(1)
     
     # ------------------------------------------------------------- 1. Forward-Chaining Temporal Split
-    train_mask = d["year"] <= 2018
-    test_mask = d["year"] >= 2019
+    # To ensure strict like-for-like comparison, we restrict historical train & test to observations with available lag
+    d_lag = d.dropna(subset=["lag_target"]).copy()
     
-    d_train = d[train_mask].copy()
-    d_test = d[test_mask].copy()
+    train_mask = d_lag["year"] <= 2018
+    test_mask = d_lag["year"] >= 2019
     
-    # Models fit on historical data
-    ols_temp = LinearRegression().fit(d_train[FACTOR_COLS], d_train[TARGET])
-    rf_temp = RandomForestRegressor(n_estimators=200, random_state=seed).fit(d_train[FACTOR_COLS], d_train[TARGET])
+    d_train = d_lag[train_mask].copy()
+    d_test = d_lag[test_mask].copy()
     
-    # Full test set predictions
-    p_ols_test = ols_temp.predict(d_test[FACTOR_COLS])
-    p_rf_test = rf_temp.predict(d_test[FACTOR_COLS])
+    features_base = FACTOR_COLS
+    features_aug = FACTOR_COLS + ["lag_target"]
     
-    # Naive baseline evaluation on available observations
-    test_valid_naive = d_test.dropna(subset=["naive_pred"])
-    p_ols_matched = ols_temp.predict(test_valid_naive[FACTOR_COLS])
-    p_rf_matched = rf_temp.predict(test_valid_naive[FACTOR_COLS])
+    # Base models (contemporaneous drivers only)
+    ols_base = LinearRegression().fit(d_train[features_base], d_train[TARGET])
+    rf_base = RandomForestRegressor(n_estimators=200, random_state=seed).fit(d_train[features_base], d_train[TARGET])
+    
+    p_ols_base = ols_base.predict(d_test[features_base])
+    p_rf_base = rf_base.predict(d_test[features_base])
+    
+    # Naive baseline (persistence: predicts lagged outcome)
+    p_naive = d_test["lag_target"].values
+    
+    # Augmented models (contemporaneous + lagged outcome)
+    ols_aug = LinearRegression().fit(d_train[features_aug], d_train[TARGET])
+    rf_aug = RandomForestRegressor(n_estimators=200, random_state=seed).fit(d_train[features_aug], d_train[TARGET])
+    
+    p_ols_aug = ols_aug.predict(d_test[features_aug])
+    p_rf_aug = rf_aug.predict(d_test[features_aug])
     
     temporal_summary = pd.DataFrame([
         {
             "Protocol": "Temporal Split (2019-2023)",
-            "Model": "Linear OLS",
-            "R2": float(r2_score(d_test[TARGET], p_ols_test)),
-            "RMSE": float(np.sqrt(mean_squared_error(d_test[TARGET], p_ols_test))),
-            "MAE": float(mean_absolute_error(d_test[TARGET], p_ols_test)),
+            "Model": "Linear OLS (contemporaneous)",
+            "Features": "6 WHR Drivers",
+            "R2": float(r2_score(d_test[TARGET], p_ols_base)),
+            "RMSE": float(np.sqrt(mean_squared_error(d_test[TARGET], p_ols_base))),
+            "MAE": float(mean_absolute_error(d_test[TARGET], p_ols_base)),
             "Test_N": len(d_test),
         },
         {
             "Protocol": "Temporal Split (2019-2023)",
-            "Model": "Random Forest",
-            "R2": float(r2_score(d_test[TARGET], p_rf_test)),
-            "RMSE": float(np.sqrt(mean_squared_error(d_test[TARGET], p_rf_test))),
-            "MAE": float(mean_absolute_error(d_test[TARGET], p_rf_test)),
+            "Model": "Random Forest (contemporaneous)",
+            "Features": "6 WHR Drivers",
+            "R2": float(r2_score(d_test[TARGET], p_rf_base)),
+            "RMSE": float(np.sqrt(mean_squared_error(d_test[TARGET], p_rf_base))),
+            "MAE": float(mean_absolute_error(d_test[TARGET], p_rf_base)),
             "Test_N": len(d_test),
         },
         {
-            "Protocol": "Temporal Split (Matched N)",
-            "Model": "Naive Prior-Year Baseline",
-            "R2": float(r2_score(test_valid_naive[TARGET], test_valid_naive["naive_pred"])),
-            "RMSE": float(np.sqrt(mean_squared_error(test_valid_naive[TARGET], test_valid_naive["naive_pred"]))),
-            "MAE": float(mean_absolute_error(test_valid_naive[TARGET], test_valid_naive["naive_pred"])),
-            "Test_N": len(test_valid_naive),
+            "Protocol": "Temporal Split (2019-2023)",
+            "Model": "Naive Prior-Year Baseline (has access to lagged outcome)",
+            "Features": "Lagged Life Ladder (Y_{i, t-1})",
+            "R2": float(r2_score(d_test[TARGET], p_naive)),
+            "RMSE": float(np.sqrt(mean_squared_error(d_test[TARGET], p_naive))),
+            "MAE": float(mean_absolute_error(d_test[TARGET], p_naive)),
+            "Test_N": len(d_test),
+        },
+        {
+            "Protocol": "Temporal Split (2019-2023)",
+            "Model": "Linear OLS (with lagged outcome)",
+            "Features": "6 WHR Drivers + Lagged Life Ladder",
+            "R2": float(r2_score(d_test[TARGET], p_ols_aug)),
+            "RMSE": float(np.sqrt(mean_squared_error(d_test[TARGET], p_ols_aug))),
+            "MAE": float(mean_absolute_error(d_test[TARGET], p_ols_aug)),
+            "Test_N": len(d_test),
+        },
+        {
+            "Protocol": "Temporal Split (2019-2023)",
+            "Model": "Random Forest (with lagged outcome)",
+            "Features": "6 WHR Drivers + Lagged Life Ladder",
+            "R2": float(r2_score(d_test[TARGET], p_rf_aug)),
+            "RMSE": float(np.sqrt(mean_squared_error(d_test[TARGET], p_rf_aug))),
+            "MAE": float(mean_absolute_error(d_test[TARGET], p_rf_aug)),
+            "Test_N": len(d_test),
         },
     ])
     
@@ -95,6 +129,7 @@ def evaluate_leak_free_models(df: pd.DataFrame, n_splits: int = 5, seed: int = 4
         {
             "Protocol": f"GroupKFold ({n_splits}-fold Country)",
             "Model": "Linear OLS",
+            "Features": "6 WHR Drivers",
             "R2": float(np.mean(ols_r2s)),
             "RMSE": float(np.mean(ols_rmses)),
             "MAE": float(np.mean(ols_maes)),
@@ -103,6 +138,7 @@ def evaluate_leak_free_models(df: pd.DataFrame, n_splits: int = 5, seed: int = 4
         {
             "Protocol": f"GroupKFold ({n_splits}-fold Country)",
             "Model": "Random Forest",
+            "Features": "6 WHR Drivers",
             "R2": float(np.mean(rf_r2s)),
             "RMSE": float(np.mean(rf_rmses)),
             "MAE": float(np.mean(rf_maes)),
@@ -115,8 +151,10 @@ def evaluate_leak_free_models(df: pd.DataFrame, n_splits: int = 5, seed: int = 4
     return {
         "summary_table": comparison_summary,
         "old_leaking_rf_r2": 0.8663,
-        "temporal_rf_r2": float(r2_score(d_test[TARGET], p_rf_test)),
-        "temporal_naive_r2": float(r2_score(test_valid_naive[TARGET], test_valid_naive["naive_pred"])),
+        "temporal_rf_r2": float(r2_score(d_test[TARGET], p_rf_base)),
+        "temporal_naive_r2": float(r2_score(d_test[TARGET], p_naive)),
+        "temporal_ols_aug_r2": float(r2_score(d_test[TARGET], p_ols_aug)),
+        "temporal_rf_aug_r2": float(r2_score(d_test[TARGET], p_rf_aug)),
         "groupkfold_rf_r2": float(np.mean(rf_r2s)),
         "groupkfold_ols_r2": float(np.mean(ols_r2s)),
     }
