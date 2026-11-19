@@ -5,6 +5,8 @@ multivariate piecewise regressions, affect decomposition, and social comparison 
 """
 from analysis.panel_models import (
     bivariate_panel_models,
+    bivariate_mundlak,
+    year_fixed_effects_diagnostics,
     pooled_ols,
     between_estimator,
     within_fe,
@@ -13,11 +15,13 @@ from analysis.panel_models import (
 )
 from analysis.breakpoint import (
     multivariate_piecewise,
+    piecewise_threshold_sensitivity,
     block_bootstrap_tau,
     yearly_piecewise_significance,
 )
 from analysis.validation import (
     evaluate_leak_free_models,
+    nested_lagged_model_ftest,
 )
 from analysis.affect import (
     run_affect_models,
@@ -31,15 +35,19 @@ from analysis.relative_income import (
 
 __all__ = [
     "bivariate_panel_models",
+    "bivariate_mundlak",
+    "year_fixed_effects_diagnostics",
     "pooled_ols",
     "between_estimator",
     "within_fe",
     "mundlak",
     "comparison_table",
     "multivariate_piecewise",
+    "piecewise_threshold_sensitivity",
     "block_bootstrap_tau",
     "yearly_piecewise_significance",
     "evaluate_leak_free_models",
+    "nested_lagged_model_ftest",
     "run_affect_models",
     "analyze_residuals",
     "evaluate_relative_income",

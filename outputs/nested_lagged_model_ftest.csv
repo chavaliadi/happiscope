@@ -1,0 +1,2 @@
+Test,F_statistic,df1,df2,p_value,restricted_r2,unrestricted_r2,restricted_ssr,unrestricted_ssr,test_n
+Nested F-Test (Incremental Value of 6 Drivers over Lag),28.41709574638086,6,587,0.0,0.8705093943022462,0.8996558056625318,96.14814354073644,74.50662500689651,595

@@ -119,6 +119,138 @@ def bivariate_panel_models(df: pd.DataFrame) -> Dict[str, Any]:
     }
 
 
+def bivariate_mundlak(df: pd.DataFrame) -> Dict[str, Any]:
+    """Bivariate Mundlak specification: Life Ladder regressed on within Log GDP
+
+    and country-mean Log GDP with cluster-robust standard errors.
+    Directly tests H0: beta_within == beta_between (Easterlin equality test).
+    """
+    d = complete_cases(df)
+    means_gdp = d.groupby("Country name")["Log GDP per capita"].transform("mean")
+    dev_gdp = d["Log GDP per capita"] - means_gdp
+    
+    # Param 1: (const, within, between)
+    mundlak_df = pd.DataFrame({
+        "const": 1.0,
+        "Log_GDP_within": dev_gdp,
+        "Log_GDP_between": means_gdp,
+    }, index=d.index)
+    
+    m_mundlak = sm.OLS(d[TARGET], mundlak_df).fit(
+        cov_type="cluster", cov_kwds={"groups": d["Country name"]}
+    )
+    
+    # Wald test for beta_within == beta_between
+    r_matrix = np.array([[0.0, 1.0, -1.0]])
+    wald_test = m_mundlak.wald_test(r_matrix)
+    wald_stat = float(wald_test.statistic.item() if hasattr(wald_test.statistic, "item") else wald_test.statistic)
+    wald_pval = float(wald_test.pvalue)
+    
+    # Param 2: (const, raw_gdp, mean_gdp) where coef on mean is gamma = beta_between - beta_within
+    mundlak_alt = pd.DataFrame({
+        "const": 1.0,
+        "Log_GDP_raw": d["Log GDP per capita"],
+        "Log_GDP_mean": means_gdp,
+    }, index=d.index)
+    m_alt = sm.OLS(d[TARGET], mundlak_alt).fit(
+        cov_type="cluster", cov_kwds={"groups": d["Country name"]}
+    )
+    
+    return {
+        "model": m_mundlak,
+        "model_alt": m_alt,
+        "beta_within": float(m_mundlak.params["Log_GDP_within"]),
+        "se_within": float(m_mundlak.bse["Log_GDP_within"]),
+        "p_within": float(m_mundlak.pvalues["Log_GDP_within"]),
+        "beta_between": float(m_mundlak.params["Log_GDP_between"]),
+        "se_between": float(m_mundlak.bse["Log_GDP_between"]),
+        "p_between": float(m_mundlak.pvalues["Log_GDP_between"]),
+        "gamma_diff": float(m_alt.params["Log_GDP_mean"]),
+        "gamma_se": float(m_alt.bse["Log_GDP_mean"]),
+        "gamma_pvalue": float(m_alt.pvalues["Log_GDP_mean"]),
+        "wald_statistic": wald_stat,
+        "wald_pvalue": wald_pval,
+        "n_obs": len(d),
+        "n_countries": int(d["Country name"].nunique()),
+    }
+
+
+def year_fixed_effects_diagnostics(df: pd.DataFrame) -> Dict[str, Any]:
+    """Diagnoses year fixed effects in bivariate specification:
+
+    estimates year dummies, tests joint significance, computes degrees of freedom difference,
+    and returns both raw effects (relative to 2005) and grand-mean centered year effects.
+    """
+    d = complete_cases(df)
+    p_data = d.set_index(["Country name", "year"])
+    
+    # Country FE only
+    m_c = PanelOLS(
+        p_data[TARGET], p_data[["Log GDP per capita"]], entity_effects=True, time_effects=False
+    ).fit(cov_type="clustered", cluster_entity=True)
+    
+    # Country + Year FE (Two-way)
+    m_cy = PanelOLS(
+        p_data[TARGET], p_data[["Log GDP per capita"]], entity_effects=True, time_effects=True
+    ).fit(cov_type="clustered", cluster_entity=True)
+    
+    df_diff = int(m_c.df_resid - m_cy.df_resid)
+    
+    # Explicit regression with year dummies to retrieve individual year dummy coefficients & SEs
+    d_panel = d.copy()
+    d_panel["y_dm_c"] = d_panel[TARGET] - d_panel.groupby("Country name")[TARGET].transform("mean")
+    d_panel["x_dm_c"] = d_panel["Log GDP per capita"] - d_panel.groupby("Country name")["Log GDP per capita"].transform("mean")
+    
+    year_dummies = pd.get_dummies(d_panel["year"], drop_first=True, dtype=float)
+    X_twoway = sm.add_constant(pd.concat([d_panel[["x_dm_c"]], year_dummies], axis=1))
+    ols_twoway = sm.OLS(d_panel["y_dm_c"], X_twoway).fit(
+        cov_type="cluster", cov_kwds={"groups": d_panel["Country name"]}
+    )
+    
+    year_cols = list(year_dummies.columns)
+    r_mat = np.zeros((len(year_cols), len(ols_twoway.params)))
+    for i, col in enumerate(year_cols):
+        idx = list(ols_twoway.params.index).index(col)
+        r_mat[i, idx] = 1.0
+    wald_years = ols_twoway.wald_test(r_mat)
+    
+    # N per year
+    n_per_year = d["year"].value_counts().to_dict()
+    
+    # Year effects relative to 2005
+    raw_eff = {2005: 0.0}
+    se_eff = {2005: 0.0}
+    p_eff = {2005: 1.0}
+    for col in year_cols:
+        raw_eff[col] = float(ols_twoway.params[col])
+        se_eff[col] = float(ols_twoway.bse[col])
+        p_eff[col] = float(ols_twoway.pvalues[col])
+        
+    all_years = sorted(raw_eff.keys())
+    raw_vals = np.array([raw_eff[y] for y in all_years])
+    grand_mean = float(np.mean(raw_vals))
+    centered_vals = raw_vals - grand_mean
+    
+    year_df = pd.DataFrame({
+        "year": all_years,
+        "n_obs": [n_per_year.get(y, 0) for y in all_years],
+        "raw_effect_vs_2005": [raw_eff[y] for y in all_years],
+        "std_error": [se_eff[y] for y in all_years],
+        "p_value": [p_eff[y] for y in all_years],
+        "centered_effect_grand_mean": centered_vals,
+    })
+    
+    return {
+        "year_table": year_df,
+        "df_difference": df_diff,
+        "joint_chi2": float(wald_years.statistic.item() if hasattr(wald_years.statistic, "item") else wald_years.statistic),
+        "joint_pvalue": float(wald_years.pvalue),
+        "grand_mean_offset": grand_mean,
+        "base_year_2005_n": n_per_year.get(2005, 0),
+        "is_2005_thin": bool(n_per_year.get(2005, 0) < 10),
+    }
+
+
 def pooled_ols(df: pd.DataFrame) -> Dict[str, Any]:
     """Current pooled OLS specification (unchanged)."""
     d = complete_cases(df)
@@ -200,18 +332,37 @@ def mundlak(df: pd.DataFrame) -> Dict[str, Any]:
     # Wald test for equality: beta_within - beta_between == 0 across all 6 factors
     r_matrix = np.zeros((len(FACTOR_COLS), len(model.params)))
     param_names = list(model.params.index)
+    driver_rows = []
     for idx, f in enumerate(FACTOR_COLS):
         i_w = param_names.index(f"{f}_within")
         i_b = param_names.index(f"{f}_between")
         r_matrix[idx, i_w] = 1.0
         r_matrix[idx, i_b] = -1.0
         
+        # Single driver test
+        r_single = np.zeros((1, len(param_names)))
+        r_single[0, i_w] = 1.0
+        r_single[0, i_b] = -1.0
+        w_single = model.wald_test(r_single)
+        b_w = float(model.params[f"{f}_within"])
+        b_b = float(model.params[f"{f}_between"])
+        driver_rows.append({
+            "Driver": f,
+            "within_beta": b_w,
+            "between_beta": b_b,
+            "difference_beta": b_b - b_w,
+            "wald_chi2": float(w_single.statistic.item() if hasattr(w_single.statistic, "item") else w_single.statistic),
+            "p_value": float(w_single.pvalue),
+        })
+        
     wald = model.wald_test(r_matrix)
+    driver_wald_df = pd.DataFrame(driver_rows)
     
     return {
         "model": model,
         "wald_statistic": float(wald.statistic.item() if hasattr(wald.statistic, "item") else wald.statistic),
         "wald_pvalue": float(wald.pvalue),
+        "driver_wald_table": driver_wald_df,
         "n_obs": len(d),
         "n_countries": int(d["Country name"].nunique()),
     }

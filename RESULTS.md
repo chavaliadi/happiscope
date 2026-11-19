@@ -10,12 +10,17 @@ This document serves as the authoritative Numbers Register for HappiScope. Every
 
 | Claim / Metric | Value | Model / Specification | Producing Function | Source File / Output Artifact |
 |---|---|---|---|---|
-| Bivariate Pooled OLS Log GDP Beta | `+0.7750` | Pooled OLS (Complete Cases, N=2,103, SE=0.0132, p<0.0001, $R^2=0.6198$) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
-| Bivariate Between Estimator Log GDP Beta | `+0.7454` | Between Estimator (Country Means, N=155, SE=0.0398, p<0.0001, $R^2=0.6964$) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
-| Bivariate Within FE (Country only) Beta | `+0.7229` | Within Country FE (Entity Clustered SE=0.1526, p=2.32e-06, $R^2_{\text{within}}=0.0974$) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
-| Bivariate Within FE (Country + Year) Beta | `+0.7175` | Two-Way FE (Entity Clustered SE=0.1807, p=7.43e-05, $R^2_{\text{within}}=0.0974$) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
-| Easterlin Ratio (Between / Within Country-Only) | `1.0311` | Ratio of Between Beta (0.7454) to Within Country-FE Beta (0.7229) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
-| Secular-Trend-Absorbed Ratio (Between / Within Two-Way) | `1.0388` | Ratio of Between Beta (0.7454) to Within Two-Way FE Beta (0.7175) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
+| Bivariate Pooled OLS Log GDP Beta | `+0.7750` | Pooled OLS (Complete Cases, N=2,103, SE=0.0132, 95% CI: [0.7490, 0.8009], $R^2=0.6198$) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
+| Bivariate Pooled OLS (Clustered SE) | `+0.7750` | Pooled OLS (Cluster-Robust SE=0.0353, 95% CI: [0.7058, 0.8442]) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
+| Pairwise Bivariate OLS Log GDP Beta | `+0.7609` | Pairwise Complete on GDP and Ladder ($N=2,335, R^2=0.6140$) | `views/the_debate.py` | `views/the_debate.py` |
+| Bivariate Between Estimator Log GDP Beta | `+0.7454` | Between Estimator (Country Means, N=155, SE=0.0398, 95% CI: [0.6668, 0.8240], $R^2=0.6964$) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
+| Bivariate Within FE (Country only) Beta | `+0.7229` | Within Country FE (Entity Clustered SE=0.1526, 95% CI: [0.4236, 1.0222], $R^2_{\text{within}}=0.0974$) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
+| Bivariate Within FE (Country + Year) Beta | `+0.7175` | Two-Way FE (Entity Clustered SE=0.1807, 95% CI: [0.3631, 1.0719], $R^2_{\text{within}}=0.0974$) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
+| Bivariate Mundlak Slope Equality Wald | `0.1137` | Wald $\chi^2(1)$ Test ($p = 0.7360$, Cannot Reject Between == Within Equality) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
+| Bivariate Mundlak Difference Coef ($\gamma$) | `+0.0533` | Mean Term Coef $\beta_{\text{between}} - \beta_{\text{within}}$ ($SE=0.1582, z=0.337, p=0.7360$) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
+| Easterlin Ratio (Between / Within Country-Only) | `1.0311` | Point Ratio of Between Beta (0.7454) to Within Country-FE Beta (0.7229) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
+| Secular-Trend-Absorbed Ratio (Between / Within Two-Way) | `1.0388` | Point Ratio of Between Beta (0.7454) to Within Two-Way FE Beta (0.7175) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
+| Joint Test of Year Fixed Effects | `1075.24` | Wald $\chi^2(18)$ Test ($p = 5.75 \times 10^{-217}$, Strongly Significant) | Verification Step C | Session Terminal |
 
 ### Multivariate Specifications (Conditional / Partial Effects Controlling for Other 5 WHR Drivers)
 
@@ -47,6 +52,10 @@ This document serves as the authoritative Numbers Register for HappiScope. Every
 | Multivariate Partial Between-to-Within Ratio | `0.5521` | Ratio of Partial Between Beta to Within Beta (0.3106 / 0.5626) | `analysis.panel_models:comparison_table` | `outputs/mundlak_specification.csv` |
 | Mundlak Joint Wald Statistic | `16.7814` | Wald Chi-Square Test ($df=6$) | `analysis.panel_models:mundlak` | `outputs/mundlak_specification.csv` |
 | Mundlak Joint Wald p-value | `0.0101` | Rejection of Within == Between Equality | `analysis.panel_models:mundlak` | `outputs/mundlak_specification.csv` |
+| Multivariate Mundlak Log GDP Within vs Between Diff | `-0.2564` | Within +0.5630 vs Between +0.3066 ($\text{Wald } \chi^2(1)=4.9606, p=0.0259$) | `analysis.panel_models:mundlak` | `outputs/mundlak_driver_tests.csv` |
+| Multivariate Mundlak Health Within vs Between Diff | `+0.0454` | Within -0.0108 vs Between +0.0346 ($\text{Wald } \chi^2(1)=7.8673, p=0.0050$) | `analysis.panel_models:mundlak` | `outputs/mundlak_driver_tests.csv` |
+| Multivariate Mundlak Freedom Within vs Between Diff | `+0.7345` | Within +0.7978 vs Between +1.5323 ($\text{Wald } \chi^2(1)=2.4597, p=0.1168$) | `analysis.panel_models:mundlak` | `outputs/mundlak_driver_tests.csv` |
+| Multivariate Mundlak Support Within vs Between Diff | `+0.2603` | Within +2.3058 vs Between +2.5661 ($\text{Wald } \chi^2(1)=0.2189, p=0.6399$) | `analysis.panel_models:mundlak` | `outputs/mundlak_driver_tests.csv` |
 
 ---
 
@@ -54,17 +63,27 @@ This document serves as the authoritative Numbers Register for HappiScope. Every
 
 | Claim / Metric | Value | Model / Specification | Producing Function | Source File / Output Artifact |
 |---|---|---|---|---|
-| Multivariate Piecewise Breakpoint $\tau^*$ | `7.6480` | AIC Minimum Grid Search with Controls ($\approx \$2,096$) | `analysis.breakpoint:multivariate_piecewise` | `outputs/multivariate_piecewise.csv` |
-| Slope Below Breakpoint ($\beta_1$) | `-0.2811` | Multivariate Continuous Piecewise (Clustered SE) | `analysis.breakpoint:multivariate_piecewise` | `outputs/multivariate_piecewise.csv` |
-| Slope Below Standard Error | `0.1495` | Clustered SE ($p = 0.0600$, Null / Marginal) | `analysis.breakpoint:multivariate_piecewise` | `outputs/multivariate_piecewise.csv` |
-| Slope Change ($\beta_2$) | `+0.7026` | Multivariate Continuous Piecewise (Clustered SE) | `analysis.breakpoint:multivariate_piecewise` | `outputs/multivariate_piecewise.csv` |
-| Slope Change Standard Error | `0.1717` | Clustered SE ($p = 4.26 \times 10^{-5}$) | `analysis.breakpoint:multivariate_piecewise` | `outputs/multivariate_piecewise.csv` |
-| Combined Slope Above ($\beta_1 + \beta_2$) | `+0.4215` | Linear Combination with $\text{Cov}(\hat{\beta}_1, \hat{\beta}_2)$ | `analysis.breakpoint:multivariate_piecewise` | `outputs/multivariate_piecewise.csv` |
-| Combined Slope Above SE | `0.0710` | $\sqrt{\text{Var}(b_1) + \text{Var}(b_2) + 2\text{Cov}(b_1, b_2)}$ | `analysis.breakpoint:multivariate_piecewise` | `outputs/multivariate_piecewise.csv` |
-| Combined Slope Above p-value | `2.96e-09` | Asymptotic Normal Two-Tailed Test | `analysis.breakpoint:multivariate_piecewise` | `outputs/multivariate_piecewise.csv` |
-| Block Bootstrap Median $\tau$ | `9.4050` | 1,000 Block Resamples by Whole Country | `analysis.breakpoint:block_bootstrap_tau` | `outputs/breakpoint_block_bootstrap_summary.csv` |
+| Sample AIC Minimum Breakpoint $\tau_1^*$ | `7.6480` | AIC Global Minimum with Controls ($\approx \$2,096$) | `analysis.breakpoint:multivariate_piecewise` | `outputs/multivariate_piecewise.csv` |
+| Observations Below $\tau_1^*$ (7.648) | `210 (9.99%)` | Thin tail identifying lower mode ($<10\%$ of panel) | Evaluation script | Session Terminal |
+| Observations Above $\tau_1^*$ (7.648) | `1,893 (90.01%)` | Bulk of complete-case panel ($N=2,103$) | Evaluation script | Session Terminal |
+| Slope Below Breakpoint 7.648 ($\beta_1$) | `-0.2811` | Clustered SE ($SE=0.1495, p=0.0600$, Thin-Tail Artifact) | `analysis.breakpoint:multivariate_piecewise` | `outputs/multivariate_piecewise.csv` |
+| Slope Change at 7.648 ($\beta_2$) | `+0.7026` | Clustered SE ($SE=0.1717, p = 4.26 \times 10^{-5}$) | `analysis.breakpoint:multivariate_piecewise` | `outputs/multivariate_piecewise.csv` |
+| Combined Slope Above 7.648 ($\beta_1 + \beta_2$) | `+0.4215` | Linear Combination ($SE=0.0710, p=2.96 \times 10^{-9}$) | `analysis.breakpoint:multivariate_piecewise` | `outputs/multivariate_piecewise.csv` |
+| Breakpoint 7.648 Model $R^2$ | `0.7590` | Multivariate Continuous Piecewise Regression | `analysis.breakpoint:piecewise_threshold_sensitivity` | `outputs/piecewise_threshold_sensitivity.csv` |
+| Breakpoint 7.648 Model AIC | `3527.1647` | Sample AIC Global Minimum | `analysis.breakpoint:piecewise_threshold_sensitivity` | `outputs/piecewise_threshold_sensitivity.csv` |
+| Breakpoint 7.648 Model BIC | `3572.3736` | Sample AIC Global Minimum | `analysis.breakpoint:piecewise_threshold_sensitivity` | `outputs/piecewise_threshold_sensitivity.csv` |
+| Substantively Preferred Breakpoint $\tau_2^*$ | `9.4050` | Block Bootstrap Median Mode ($\approx \$12,149$) | `analysis.breakpoint:block_bootstrap_tau` | `outputs/breakpoint_block_bootstrap_summary.csv` |
+| Observations Below $\tau_2^*$ (9.405) | `986 (46.89%)` | Balanced sample partition | `analysis.breakpoint:piecewise_threshold_sensitivity` | `outputs/piecewise_threshold_sensitivity.csv` |
+| Observations Above $\tau_2^*$ (9.405) | `1,117 (53.11%)` | Balanced sample partition | `analysis.breakpoint:piecewise_threshold_sensitivity` | `outputs/piecewise_threshold_sensitivity.csv` |
+| Slope Below Breakpoint 9.405 ($\beta_1$) | `+0.2349` | Clustered SE ($SE=0.0826, p=0.0045$, Statistically Positive) | `analysis.breakpoint:piecewise_threshold_sensitivity` | `outputs/piecewise_threshold_sensitivity.csv` |
+| Slope Change at 9.405 ($\beta_2$) | `+0.2988` | Clustered SE ($SE=0.1289, p=0.0205$, Statistically Positive) | `analysis.breakpoint:piecewise_threshold_sensitivity` | `outputs/piecewise_threshold_sensitivity.csv` |
+| Combined Slope Above 9.405 ($\beta_1 + \beta_2$) | `+0.5337` | Linear Combination ($SE=0.1009, p=1.23 \times 10^{-7}$) | `analysis.breakpoint:piecewise_threshold_sensitivity` | `outputs/piecewise_threshold_sensitivity.csv` |
+| Breakpoint 9.405 Model $R^2$ | `0.7581` | Multivariate Continuous Piecewise Regression | `analysis.breakpoint:piecewise_threshold_sensitivity` | `outputs/piecewise_threshold_sensitivity.csv` |
+| Breakpoint 9.405 Model AIC | `3534.9658` | Secondary AIC Mode ($\Delta \text{AIC} = +7.80$ vs 7.648) | `analysis.breakpoint:piecewise_threshold_sensitivity` | `outputs/piecewise_threshold_sensitivity.csv` |
+| Breakpoint 9.405 Model BIC | `3580.1748` | Secondary AIC Mode | `analysis.breakpoint:piecewise_threshold_sensitivity` | `outputs/piecewise_threshold_sensitivity.csv` |
 | Block Bootstrap 95% CI Lower | `7.5319` | 2.5th Percentile ($\approx \$1,867$) | `analysis.breakpoint:block_bootstrap_tau` | `outputs/breakpoint_block_bootstrap_summary.csv` |
 | Block Bootstrap 95% CI Upper | `10.8600` | 97.5th Percentile ($\approx \$52,052$) | `analysis.breakpoint:block_bootstrap_tau` | `outputs/breakpoint_block_bootstrap_summary.csv` |
+| Satiation Evidence Characterization | `No Evidence` | Relationship accelerates above threshold, no flattening | `analysis.breakpoint:multivariate_piecewise` | `outputs/multivariate_piecewise.csv` |
 | Significant Yearly Breakpoints ($p < 0.05$) | `14 / 18` | Annual Single-Year Regressions 2006–2023 ($77.8\%$) | `analysis.breakpoint:yearly_piecewise_significance` | `outputs/yearly_piecewise_stability.csv` |
 | 2023 Cross-Sectional Breakpoint p-value | `0.1050` | Complete-Case 2023 Piecewise Regression ($N=120$) | `analysis.breakpoint:yearly_piecewise_significance` | `outputs/yearly_piecewise_stability.csv` |
 | 2022 Cross-Sectional Breakpoint p-value | `0.0686` | Complete-Case 2022 Piecewise Regression ($N=127$) | `analysis.breakpoint:yearly_piecewise_significance` | `outputs/yearly_piecewise_stability.csv` |
@@ -86,6 +105,7 @@ This document serves as the authoritative Numbers Register for HappiScope. Every
 | Temporal Split Augmented OLS RMSE | `0.3682` | Forward-Chaining Temporal Split (Test N=595, MAE=0.2623) | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
 | Temporal Split Augmented RF (with lagged outcome) $R^2$ | `0.8804` | Forward-Chaining Temporal Split (6 WHR Drivers + $Y_{i, t-1}$) | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
 | Temporal Split Augmented RF RMSE | `0.3864` | Forward-Chaining Temporal Split (Test N=595, MAE=0.2759) | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
+| Nested Model F-Test (Incremental Value of Drivers) | `28.4171` | $F(6, 587)$ on Test Set ($p < 1.0 \times 10^{-20}$, Highly Significant Improvement) | Evaluation Script | Session Terminal |
 | GroupKFold OLS Mean $R^2$ | `0.7065` | 5-Fold Cross-Validation Grouped by Country (N=2,103, MAE=0.4506) | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
 | GroupKFold OLS Mean RMSE | `0.5850` | 5-Fold Cross-Validation Grouped by Country | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
 | GroupKFold RF Mean $R^2$ | `0.6940` | 5-Fold Cross-Validation Grouped by Country (N=2,103, MAE=0.4712) | `analysis.validation:evaluate_leak_free_models` | `outputs/validation_leak_free_benchmarks.csv` |
@@ -135,7 +155,7 @@ This document serves as the authoritative Numbers Register for HappiScope. Every
 | Regional ANOVA Invariance ($F_{\text{raw}} = F_{\text{centered}}$) | `Identical` | Raw F=4.7126 vs Centered F=4.7126 (Difference $< 10^{-14}$) | `analysis.residuals:analyze_residuals` | `outputs/residual_diagnostics_summary.csv` |
 | North America Mean Country Effect | `+0.3998` | Deviation from Global Mean ($95\% \text{ CI: } [+0.1000, +0.6995], N=12$) | `analysis.residuals:analyze_residuals` | `outputs/regional_residual_effects.csv` |
 | South America Mean Country Effect | `+0.3547` | Deviation from Global Mean ($95\% \text{ CI: } [+0.1470, +0.5623], N=10$) | `analysis.residuals:analyze_residuals` | `outputs/regional_residual_effects.csv` |
-| Oceania Mean Country Effect | `+0.1489` | Deviation from Global Mean ($95\% \text{ CI: } [-0.1548, +0.4527], N=2$) | `analysis.residuals:analyze_residuals` | `outputs/regional_residual_effects.csv` |
+| Oceania Mean Country Effect | `+0.1489` | Deviation from Global Mean ($N=2$, Australia & NZ; not interpretable due to small sample size) | `analysis.residuals:analyze_residuals` | `outputs/regional_residual_effects.csv` |
 | Europe Mean Country Effect | `+0.0160` | Deviation from Global Mean ($95\% \text{ CI: } [-0.1000, +0.1320], N=39$) | `analysis.residuals:analyze_residuals` | `outputs/regional_residual_effects.csv` |
 | Africa Mean Country Effect | `-0.1121` | Deviation from Global Mean ($95\% \text{ CI: } [-0.2630, +0.0389], N=37$) | `analysis.residuals:analyze_residuals` | `outputs/regional_residual_effects.csv` |
 | Asia Mean Country Effect | `-0.1600` | Deviation from Global Mean ($95\% \text{ CI: } [-0.3235, +0.0035], N=32$) | `analysis.residuals:analyze_residuals` | `outputs/regional_residual_effects.csv` |
@@ -146,4 +166,40 @@ This document serves as the authoritative Numbers Register for HappiScope. Every
 | Top 1 Under-Performer | `Botswana` | Deviation `= -1.8066` ($N=14$ years, Africa) | `analysis.residuals:analyze_residuals` | `outputs/top_15_underperformers.csv` |
 | Top 2 Under-Performer | `Sri Lanka` | Deviation `= -1.3909` ($N=17$ years, Asia) | `analysis.residuals:analyze_residuals` | `outputs/top_15_underperformers.csv` |
 | Top 3 Under-Performer | `Tanzania` | Deviation `= -0.9512` ($N=18$ years, Africa) | `analysis.residuals:analyze_residuals` | `outputs/top_15_underperformers.csv` |
+
+---
+
+## 7. Methodological Audit & Sample Metrics
+
+| Claim / Metric | Value | Model / Specification | Producing Function | Source File / Output Artifact |
+|---|---|---|---|---|
+| Complete-Case Panel Observations | `2,103` | Listwise complete across 6 drivers (2005–2023) | `common:complete_cases` | `common.py` |
+| Total Panel Raw Observations | `2,363` | WHR 2024 updated dataset | `common:load_data` | `data/happiscope_master.csv` |
+| Complete-Case Attrition Count | `260` | Dropped observations (11.00%) | Verification script | Session Terminal |
+| Complete-Case Attrition Percentage | `11.00%` | Fraction of raw panel lost | Verification script | Session Terminal |
+| Dropped Asian Observations Count | `176` | Asian records dropped due to missing indicators | Verification script | Session Terminal |
+| Dropped Asian Observations Concentration | `67.69%` | 176 of 260 dropped rows concentrated in Asia | Verification script | Session Terminal |
+| Dropped Sample Mean Log GDP | `9.81` | Higher than retained sample ($9.35$) | Verification script | Session Terminal |
+| Retained Sample Mean Log GDP | `9.35` | Complete cases average Log GDP | Verification script | Session Terminal |
+| Dropped Sample Mean Life Ladder | `5.63` | Higher than retained sample ($5.47$) | Verification script | Session Terminal |
+| Retained Sample Mean Life Ladder | `5.47` | Complete cases average Life Ladder | Verification script | Session Terminal |
+| Unstandardized OLS vs MDI Spearman Rho | `-0.0857` | Raw arbitrary scales vs Tree Split Importance ($p=0.8717$) | Historical audit | Session Terminal |
+| Standardized OLS vs Permutation Spearman Rho | `0.8857` | Standardized Beta vs Test MSE Degradation ($p=0.0188$) | `views.factor_breakdown` | `data/importance_comparison.csv` |
+
+---
+
+## 8. Clustering & Dimensionality Diagnostics
+
+| Claim / Metric | Value | Model / Specification | Producing Function | Source File / Output Artifact |
+|---|---|---|---|---|
+| 2023 Base Year Complete Observations | `120` | Countries with full 6 drivers in 2023 | `views.clusters_and_trends` | `views/clusters_and_trends.py` |
+| 2023 Dropped Countries Count | `18` | Missing drivers in 2023 (13.04% attrition) | `views.clusters_and_trends` | `views/clusters_and_trends.py` |
+| 2023 PC1 Explained Variance | `50.80%` | First Principal Component | PCA on 2023 Scaled Factors | Session Terminal |
+| 2023 PC2 Explained Variance | `19.79%` | Second Principal Component | PCA on 2023 Scaled Factors | Session Terminal |
+| 2023 Total 2D PCA Variance | `70.59%` | Combined 2D Visualization Plane | PCA on 2023 Scaled Factors | Session Terminal |
+| K=4 Cluster Bootstrap Stability (Jaccard) | `0.5864` | 100 Bootstrap Resamples Pairwise Co-Membership | Cluster validation | Session Terminal |
+| Cluster 1 Standardized Centroid Profile | `GDP +1.28, Trust +1.84` | High-Wealth / High-Institutional-Trust ($N=19$, Mean Ladder=6.99) | `KMeans(k=4, 2023)` | Session Terminal |
+| Cluster 2 Standardized Centroid Profile | `GDP -1.31, Support -1.29` | Low-Income / Multi-Deficit Vulnerable ($N=33$, Mean Ladder=4.42) | `KMeans(k=4, 2023)` | Session Terminal |
+| Cluster 0 Standardized Centroid Profile | `GDP +0.44, Donation -1.04` | Higher-Income / Low-Donation & High-Corruption ($N=34$, Mean Ladder=5.69) | `KMeans(k=4, 2023)` | Session Terminal |
+| Cluster 3 Standardized Centroid Profile | `Freedom +0.58, Support +0.40` | Middle-Income / High-Social-Capital Emerging ($N=34$, Mean Ladder=5.96) | `KMeans(k=4, 2023)` | Session Terminal |
 

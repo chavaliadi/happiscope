@@ -159,3 +159,61 @@ def evaluate_leak_free_models(df: pd.DataFrame, n_splits: int = 5, seed: int = 4
         "groupkfold_ols_r2": float(np.mean(ols_r2s)),
     }
 
+
+def nested_lagged_model_ftest(df: pd.DataFrame) -> Dict[str, Any]:
+    """Runs a formal nested model F-test comparing:
+
+    Restricted model: Life Ladder ~ Lagged Life Ladder
+    Unrestricted model: Life Ladder ~ Lagged Life Ladder + 6 WHR Drivers
+    Evaluated on the forward-chaining temporal test set (2019-2023, N=595).
+    """
+    import statsmodels.api as sm
+    from scipy.stats import f
+    
+    d = complete_cases(df).sort_values(["Country name", "year"]).copy()
+    d["lag_target"] = d.groupby("Country name")[TARGET].shift(1)
+    d_lag = d.dropna(subset=["lag_target"]).copy()
+    
+    d_test = d_lag[d_lag["year"] >= 2019].copy()
+    
+    # Restricted: Life Ladder ~ const + lag_target
+    m_restr = sm.OLS(d_test[TARGET], sm.add_constant(d_test[["lag_target"]])).fit()
+    
+    # Unrestricted: Life Ladder ~ const + lag_target + 6 WHR Drivers
+    m_unrestr = sm.OLS(d_test[TARGET], sm.add_constant(d_test[["lag_target"] + FACTOR_COLS])).fit()
+    
+    df1 = len(FACTOR_COLS)
+    df2 = int(m_unrestr.df_resid)
+    ssr_r = float(m_restr.ssr)
+    ssr_u = float(m_unrestr.ssr)
+    
+    f_stat = float(((ssr_r - ssr_u) / df1) / (ssr_u / df2))
+    p_val = float(1.0 - f.cdf(f_stat, df1, df2))
+    
+    summary_df = pd.DataFrame([{
+        "Test": "Nested F-Test (Incremental Value of 6 Drivers over Lag)",
+        "F_statistic": f_stat,
+        "df1": df1,
+        "df2": df2,
+        "p_value": p_val,
+        "restricted_r2": float(m_restr.rsquared),
+        "unrestricted_r2": float(m_unrestr.rsquared),
+        "restricted_ssr": ssr_r,
+        "unrestricted_ssr": ssr_u,
+        "test_n": len(d_test),
+    }])
+    
+    return {
+        "summary_table": summary_df,
+        "f_stat": f_stat,
+        "df1": df1,
+        "df2": df2,
+        "p_value": p_val,
+        "restricted_r2": float(m_restr.rsquared),
+        "unrestricted_r2": float(m_unrestr.rsquared),
+        "restricted_ssr": ssr_r,
+        "unrestricted_ssr": ssr_u,
+        "model_restricted": m_restr,
+        "model_unrestricted": m_unrestr,
+    }
+

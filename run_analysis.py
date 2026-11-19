@@ -12,13 +12,23 @@ import numpy as np
 import pandas as pd
 
 from common import FACTOR_COLS, FACTORS, TARGET, load_data
-from analysis.panel_models import bivariate_panel_models, comparison_table, mundlak
+from analysis.panel_models import (
+    bivariate_panel_models,
+    bivariate_mundlak,
+    year_fixed_effects_diagnostics,
+    comparison_table,
+    mundlak,
+)
 from analysis.breakpoint import (
     multivariate_piecewise,
+    piecewise_threshold_sensitivity,
     block_bootstrap_tau,
     yearly_piecewise_significance,
 )
-from analysis.validation import evaluate_leak_free_models
+from analysis.validation import (
+    evaluate_leak_free_models,
+    nested_lagged_model_ftest,
+)
 from analysis.affect import run_affect_models
 from analysis.residuals import analyze_residuals
 from analysis.relative_income import evaluate_relative_income
@@ -50,11 +60,45 @@ def main():
     biv_res["summary_table"].to_csv(out_dir / "bivariate_panel_models.csv", index=False)
     print(f"-> Exported bivariate_panel_models.csv (Easterlin Ratio={biv_res['easterlin_ratio']:.4f}, Secular Trend Ratio={biv_res['secular_trend_ratio']:.4f})")
     
+    biv_mundlak_res = bivariate_mundlak(df)
+    biv_mundlak_df = pd.DataFrame([{
+        "Test": "Bivariate Mundlak (Life Ladder ~ Within GDP + Mean GDP)",
+        "beta_within": biv_mundlak_res["beta_within"],
+        "se_within": biv_mundlak_res["se_within"],
+        "p_within": biv_mundlak_res["p_within"],
+        "beta_between": biv_mundlak_res["beta_between"],
+        "se_between": biv_mundlak_res["se_between"],
+        "p_between": biv_mundlak_res["p_between"],
+        "gamma_difference": biv_mundlak_res["gamma_diff"],
+        "gamma_se": biv_mundlak_res["gamma_se"],
+        "gamma_pvalue": biv_mundlak_res["gamma_pvalue"],
+        "wald_chi2": biv_mundlak_res["wald_statistic"],
+        "wald_pvalue": biv_mundlak_res["wald_pvalue"],
+        "n_obs": biv_mundlak_res["n_obs"],
+        "n_countries": biv_mundlak_res["n_countries"],
+    }])
+    biv_mundlak_df.to_csv(out_dir / "bivariate_mundlak_easterlin_test.csv", index=False)
+    print(f"-> Exported bivariate_mundlak_easterlin_test.csv (Wald Chi2={biv_mundlak_res['wald_statistic']:.4f}, p={biv_mundlak_res['wald_pvalue']:.4f})")
+    
+    year_diag = year_fixed_effects_diagnostics(df)
+    year_diag["year_table"].to_csv(out_dir / "year_fixed_effects_table.csv", index=False)
+    year_diag_summary = pd.DataFrame([{
+        "joint_chi2": year_diag["joint_chi2"],
+        "joint_pvalue": year_diag["joint_pvalue"],
+        "df_difference": year_diag["df_difference"],
+        "grand_mean_offset": year_diag["grand_mean_offset"],
+        "base_year_2005_n": year_diag["base_year_2005_n"],
+        "is_2005_thin": year_diag["is_2005_thin"],
+    }])
+    year_diag_summary.to_csv(out_dir / "year_fixed_effects_summary.csv", index=False)
+    print(f"-> Exported year_fixed_effects_table.csv (Joint Chi2={year_diag['joint_chi2']:.2f}, df={year_diag['df_difference']}, p={year_diag['joint_pvalue']:.2e})")
+    
     comp_df, gdp_ratio, dw_dict = comparison_table(df)
     comp_df.to_csv(out_dir / "panel_models_comparison.csv", index=False)
     comp_df.to_csv(out_dir / "multivariate_partial_effects.csv", index=False)
     
     mundlak_res = mundlak(df)
+    mundlak_res["driver_wald_table"].to_csv(out_dir / "mundlak_driver_tests.csv", index=False)
     mundlak_summary = pd.DataFrame([{
         "wald_statistic": mundlak_res["wald_statistic"],
         "wald_pvalue": mundlak_res["wald_pvalue"],
@@ -65,6 +109,7 @@ def main():
         "durbin_watson_within_fe": dw_dict["Within FE"],
         "bivariate_easterlin_ratio": biv_res["easterlin_ratio"],
         "bivariate_secular_ratio": biv_res["secular_trend_ratio"],
+        "bivariate_mundlak_pvalue": biv_mundlak_res["wald_pvalue"],
         "multivariate_gdp_between_to_within_ratio": gdp_ratio,
     }])
     mundlak_summary.to_csv(out_dir / "mundlak_specification.csv", index=False)
@@ -72,6 +117,10 @@ def main():
     
     # ------------------------------------------------------------- 2. Multivariate Piecewise & Bootstrap
     print("\n[2/6] Running Multivariate Piecewise Regression & Bootstrap...")
+    sens_df = piecewise_threshold_sensitivity(df, taus=[7.648, 9.405])
+    sens_df.to_csv(out_dir / "piecewise_threshold_sensitivity.csv", index=False)
+    print("-> Exported piecewise_threshold_sensitivity.csv (tau=7.648 vs tau=9.405)")
+    
     pw_res = multivariate_piecewise(df)
     pw_df = pd.DataFrame([{
         "tau": pw_res["tau"],
@@ -115,7 +164,10 @@ def main():
     print("\n[3/6] Running Leak-Free Validation Benchmarks...")
     val_res = evaluate_leak_free_models(df, n_splits=5, seed=42)
     val_res["summary_table"].to_csv(out_dir / "validation_leak_free_benchmarks.csv", index=False)
-    print("-> Exported validation_leak_free_benchmarks.csv")
+    
+    ftest_res = nested_lagged_model_ftest(df)
+    ftest_res["summary_table"].to_csv(out_dir / "nested_lagged_model_ftest.csv", index=False)
+    print(f"-> Exported validation_leak_free_benchmarks.csv and nested_lagged_model_ftest.csv (F={ftest_res['f_stat']:.4f}, p={ftest_res['p_value']:.2e})")
     
     # ------------------------------------------------------------- 4. Affect Models (Kahneman & Deaton)
     print("\n[4/6] Running Fully-Standardized Affect Models...")

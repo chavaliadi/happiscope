@@ -1,0 +1,718 @@
+\hypertarget{econometric-panel-decomposition-structural-breakpoints-and-predictive-generalization-in-the-world-happiness-report-20052023}{%
+\section{Econometric Panel Decomposition, Structural Breakpoints, and
+Predictive Generalization in the World Happiness Report
+(2005--2023)}\label{econometric-panel-decomposition-structural-breakpoints-and-predictive-generalization-in-the-world-happiness-report-20052023}}
+
+\textbf{Authors:} HappiScope Research Team\\
+\textbf{Supervisor:} Academic Panel Review Board\\
+\textbf{Institution:} Advanced Empirical Analytics Group\\
+\textbf{Date:} November 2026
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{abstract}{%
+\subsection{2. Abstract}\label{abstract}}
+
+This study provides an econometric and machine learning re-evaluation of
+the World Happiness Report panel (2005--2023), covering 165 nations.
+Motivated by contradictory claims regarding the Easterlin Paradox,
+income satiation, and predictive driver importance, we implement panel
+fixed effects, continuous piecewise models, and leak-free validation
+protocols. Regressing Cantril Life Ladder on Log GDP per capita alone
+yields an Easterlin ratio of cross-sectional between-country slope
+(\(\beta = 0.7454\)) to longitudinal within-country slope
+(\(\beta = 0.7229\)) of 1.0311. A bivariate Mundlak specification fails
+to reject equality between these slopes (\(p = 0.7360\)), indicating no
+statistically detectable difference, though the within-country estimate
+is imprecise (\(95\% \text{ CI: } [0.4236, 1.0222]\)). In multivariate
+models, controlling for non-income drivers reduces the between-country
+income slope to \(0.3106\) via cross-sectional collinearity with social
+institutions. Piecewise regression reveals structural fragility: the
+Akaike Information Criterion surface is bimodal across country-cluster
+bootstrap panels, yielding an identification interval spanning
+\(\tau \in [7.5319, 10.8600]\) (\(\approx \$1,867\) to \(\$52,052\)).
+The sample AIC minimum (\(\tau = 7.648\)) is identified off a thin tail
+(\(9.99\%\) of observations) with an implausible negative lower slope
+(\(\beta_1 = -0.2811, p = 0.0600\)), whereas the bootstrap median
+(\(\tau = 9.405\)) reveals accelerated positive returns
+(\(\beta_1 = 0.2349, p = 0.0045\); slope above
+\(= 0.5337, p < 0.0001\)). Under forward-chaining temporal splits
+(2019--2023), contemporaneous drivers explain \(R^2 = 0.7604\), but
+adding lagged national happiness increases performance to
+\(R^2 = 0.8913\) (\(F = 28.42, p < 10^{-20}\)), demonstrating
+substantial historical persistence in national well-being.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{introduction-and-motivation}{%
+\subsection{3. Introduction and
+Motivation}\label{introduction-and-motivation}}
+
+Subjective well-being research frequently informs national policy
+debates, multilateral development priorities, and economic growth
+targets. For decades, the field has been animated by two foundational
+debates: 1. \textbf{The Easterlin Paradox}: Whether economic expansion
+yields enduring improvements in national life satisfaction, or whether
+hedonic adaptation and social comparison nullify aggregate gains over
+time. 2. \textbf{Income Satiation}: Whether the marginal utility of
+income diminishes to zero beyond a critical developmental threshold.
+
+Prior empirical presentations often struggled with methodological
+vulnerabilities. Bivariate cross-sectional correlations were routinely
+conflated with longitudinal growth elasticities; pooled Ordinary Least
+Squares (OLS) models ignored country-level clustering and time trends;
+machine learning models reported inflated predictive accuracy due to
+random-split panel leakage; and piecewise regression thresholds were
+asserted without sensitivity checks against sample composition.
+
+This report establishes an econometric assessment of the World Happiness
+Report (WHR) panel dataset (2005--2023). By decomposing variation into
+within-country and between-country components, testing the stability of
+structural thresholds, implementing clustered standard errors, and
+auditing cross-validation protocols, we provide an empirical accounting
+of what the data statistically support and where precision limits causal
+inference.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{literature-survey}{%
+\subsection{4. Literature Survey}\label{literature-survey}}
+
+The empirical framework of this investigation is grounded strictly in
+five foundational studies:
+
+\begin{longtable}[]{@{}
+  >{\centering\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.29}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.24}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.24}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.24}}@{}}
+\toprule
+S.No & Publication Details & Summary (Work / Limitation) & Conclusion \\
+\midrule
+\endhead
+1 & \textbf{Easterlin, R. A. (1974)}. \emph{Does economic growth improve
+the human lot? Some empirical evidence}. In Nations and Households in
+Economic Growth (pp.~89--125). Academic Press. & Examined time-series of
+national happiness in post-war US and international cross-sections.
+Argued that despite substantial GDP growth, average subjective
+well-being remained flat due to hedonic adaptation and relative income
+comparison. \textbf{Limitation}: Based on sparse historical time series
+and bivariate comparisons. & Growth does not raise long-term subjective
+well-being; relative status dominates absolute economic gains. \\
+2 & \textbf{Stevenson, B., \& Wolfers, J. (2008)}. \emph{Economic growth
+and subjective well-being: Reassessing the Easterlin paradox}. Brookings
+Papers on Economic Activity, 2008(1), 1--87. & Re-analyzed multi-decade
+global surveys (Gallup World Poll, World Values Survey). Re-estimated
+income-happiness slopes within and between countries, finding positive,
+log-linear relationships across both developing and developed nations.
+\textbf{Limitation}: Relied heavily on repeated cross-sections with
+short panel dimensions. & Rejects the Easterlin claim; economic growth
+generates measurable increases in subjective well-being with no evidence
+of satiation. \\
+3 & \textbf{Kahneman, D., \& Deaton, A. (2010)}. \emph{High income
+improves evaluation of life but not emotional well-being}. PNAS,
+107(38), 16489--16493. & Analyzed 450,000 US responses, separating
+evaluative well-being (Cantril Ladder) from emotional affect
+(positive/negative daily mood). Found daily emotional affect plateaus
+near \$75,000, while life evaluation continues rising log-linearly.
+\textbf{Limitation}: US cross-sectional household survey, not
+international macro panel. & Income satiation applies to day-to-day
+emotional affect, whereas cognitive life evaluation does not exhibit a
+ceiling. \\
+4 & \textbf{Killingsworth, M. A. (2021)}. \emph{Experienced well-being
+rises with income, even above \$75,000 per year}. PNAS, 118(4),
+e2016976118. & Deployed smartphone experience sampling across 33,391 US
+adults (1.7M reports), tracking real-time affect. Found experienced
+well-being continues rising above \$75,000 without an absolute plateau.
+\textbf{Limitation}: Smartphone sample biased toward tech-literate
+populations; US-centric. & Questioned the \$75,000 emotional affect
+threshold; concluded that all forms of well-being continue rising with
+income. \\
+5 & \textbf{Killingsworth, M. A., Kahneman, D., \& Mellers, B. (2023)}.
+\emph{Income and emotional well-being: A conflict resolved}. PNAS,
+120(10), e2208661120. & Conducted an adversarial collaboration
+re-analyzing experience sampling data. Identified that happiness
+increases systematically with income for the majority, while a plateau
+occurs exclusively for an unhappy minority (\(15–20\%\)) suffering
+non-financial distress. \textbf{Limitation}: Individual-level microdata;
+cannot be mapped directly to cross-national macro aggregates. &
+Satiation is heterogeneous: emotional well-being plateaus only for the
+least happy quantile, while expanding for the broader population. \\
+\bottomrule
+\end{longtable}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{research-gap-and-problem-statement}{%
+\subsection{5. Research Gap and Problem
+Statement}\label{research-gap-and-problem-statement}}
+
+Despite decades of scholarship, cross-national analytical applications
+frequently suffer from four recurring methodological failures: 1.
+\textbf{Total vs.~Partial Slope Conflation}: Estimating a multivariate
+regression with controls (e.g., social support, corruption) and
+comparing between- and within-country income coefficients as an
+``Easterlin test'', ignoring that collinear cross-sectional controls
+absorb between-country income variation. 2. \textbf{Structural Fragility
+of Piecewise Breakpoints}: Reporting an empirical breakpoint (\(\tau\))
+without evaluating whether it partitions the data evenly or overfits an
+unstable, sparse tail. 3. \textbf{Information Leakage in Validation}:
+Partitioning panel rows randomly across train/test splits, allowing past
+and future observations from the same country to leak across sets, which
+inflates predictive accuracy. 4. \textbf{Failure to Benchmark Against
+Longitudinal Persistence}: Evaluating complex models against
+zero-information baselines rather than naive historical persistence
+(predicting last year's happiness score).
+
+\textbf{Problem Statement}: To resolve these vulnerabilities, we
+construct an end-to-end reproducible analytical package that estimates
+unconditioned bivariate panel models, re-centers country fixed effects,
+tests breakpoint parameter sensitivity, and validates leak-free machine
+learning baselines across the complete 2005--2023 WHR panel.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{dataset-description-and-attrition-analysis}{%
+\subsection{6. Dataset Description and Attrition
+Analysis}\label{dataset-description-and-attrition-analysis}}
+
+The source dataset is the official World Happiness Report 2024 update
+(\href{file:///Users/srinivasch/Desktop/Happiscope/data/happiscope_master.csv}{\texttt{happiscope\_master.csv}}),
+comprising \(N = 2,363\) country-year observations across 165 nations
+from 2005 to 2023. The dependent variable is the \textbf{Cantril Life
+Ladder} (evaluative well-being on an 11-point scale from 0 to 10). The
+six core explanatory drivers are: - \texttt{Log\ GDP\ per\ capita}:
+Purchasing-power-adjusted economic output in natural logarithms. -
+\texttt{Social\ support}: National average response to having someone to
+count on in times of trouble. -
+\texttt{Healthy\ life\ expectancy\ at\ birth}: WHO-derived healthy life
+expectancy in years. - \texttt{Freedom\ to\ make\ life\ choices}:
+National average binary response regarding perceived autonomy. -
+\texttt{Generosity}: Residual of national charitable donation response
+regressed on Log GDP. - \texttt{Perceptions\ of\ corruption}: Average
+perception of institutional and business corruption.
+
+\hypertarget{complete-case-attrition-and-non-random-missingness}{%
+\subsubsection{Complete-Case Attrition and Non-Random
+Missingness}\label{complete-case-attrition-and-non-random-missingness}}
+
+Enforcing complete-case analysis across all six explanatory variables
+and the Cantril Life Ladder drops 260 observations (\(11.00\%\)),
+yielding an estimation sample of \(N = 2,103\) across 155 countries: -
+\textbf{Geographic Concentration}: Missingness is systematically
+concentrated in Asia, which accounts for 176 of the 260 dropped
+observations (\(67.69\%\)). - \textbf{Economic Profile Differences}: The
+dropped sample is substantially wealthier than the retained sample (mean
+Log GDP of \(9.81\) vs.~\(9.35\)) and reports higher baseline life
+satisfaction (mean Life Ladder of \(5.63\) vs.~\(5.47\)). Missingness is
+driven by non-reporting of corruption and charitable giving indicators
+in Gulf Cooperation Council economies and specific Asian nations.
+Consequently, complete-case regressions slightly under-represent
+high-income Asian institutional profiles.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{methodology}{%
+\subsection{7. Methodology}\label{methodology}}
+
+\hypertarget{panel-econometric-estimators}{%
+\subsubsection{7.1 Panel Econometric
+Estimators}\label{panel-econometric-estimators}}
+
+To separate cross-sectional from longitudinal dynamics, we estimate four
+complementary specifications: 1. \textbf{Pooled OLS}: Standard pooled
+regression ignoring entity and time grouping. 2. \textbf{Between
+Estimator}: Regresses country means (\(\bar{Y}_i\)) on country-mean
+regressors (\(\bar{X}_i\)), capturing long-run cross-sectional
+differences across \(N = 155\) nations. 3. \textbf{Within Estimator
+(Country FE)}: Implemented via within-entity demeaning with
+cluster-robust standard errors at the country level. 4. \textbf{Two-Way
+Fixed Effects}: Demeans across both countries and survey years, removing
+shared global secular trends (e.g., macroeconomic shocks).
+
+\hypertarget{the-formal-mundlak-specification}{%
+\subsubsection{7.2 The Formal Mundlak
+Specification}\label{the-formal-mundlak-specification}}
+
+To formally test slope equality, we estimate the Mundlak equation:
+\[\text{Life Ladder}_{it} = \alpha + \beta_{\text{within}} X_{it} + \gamma \bar{X}_i + \epsilon_{it}\]
+where \(\gamma = \beta_{\text{between}} - \beta_{\text{within}}\). The
+cluster-robust \(t\)-statistic on \(\gamma\) provides the exact test of
+slope divergence (\(H_0: \gamma = 0\)).
+
+\hypertarget{continuous-piecewise-regression-and-block-bootstrap}{%
+\subsubsection{7.3 Continuous Piecewise Regression and Block
+Bootstrap}\label{continuous-piecewise-regression-and-block-bootstrap}}
+
+We model non-linear income returns using a continuous piecewise hinge:
+\[\text{Life Ladder}_{it} = \alpha + \beta_1 X_{it} + \beta_2 \max(0, X_{it} - \tau) + \mathbf{Z}_{it}\boldsymbol{\delta} + \epsilon_{it}\]
+where \(\mathbf{Z}_{it}\) controls for the remaining five WHR drivers.
+Because panel observations within nations share serial correlation,
+standard row-wise bootstrapping destroys error covariance. We implement
+a \textbf{whole-country block bootstrap} (1,000 resamples), sampling
+entire country trajectories with replacement.
+
+\hypertarget{leak-free-predictive-validation}{%
+\subsubsection{7.4 Leak-Free Predictive
+Validation}\label{leak-free-predictive-validation}}
+
+To eliminate panel leakage, models are benchmarked across two leak-free
+designs: - \textbf{Forward-Chaining Temporal Split}: Train on historical
+panel data (\(\le 2018\), \(N=1,353\)); test on out-of-sample future
+years (\(2019–2023\), \(N=595\)). - \textbf{GroupKFold
+Cross-Validation}: 5-fold split grouped strictly by country, evaluating
+cross-national generalization to entirely unseen nations. -
+\textbf{Persistence Benchmarks}: Compares machine learning and OLS
+models against naive prior-year prediction (\(Y_{i, t-1}\)) on matched
+samples.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{results-eight-empirical-findings}{%
+\subsection{8. Results: Eight Empirical
+Findings}\label{results-eight-empirical-findings}}
+
+\hypertarget{finding-1-cross-sectional-vs.-longitudinal-income-elasticity-the-easterlin-test}{%
+\subsubsection{Finding 1: Cross-Sectional vs.~Longitudinal Income
+Elasticity (The Easterlin
+Test)}\label{finding-1-cross-sectional-vs.-longitudinal-income-elasticity-the-easterlin-test}}
+
+In the unconditioned bivariate specification (\texttt{Life\ Ladder}
+regressed on \texttt{Log\ GDP\ per\ capita} alone), the between-country
+cross-sectional slope is \(\beta_{\text{between}} = 0.7454\)
+(\(SE = 0.0398, p < 0.0001, 95\% \text{ CI: } [0.6668, 0.8240]\)). The
+within-country longitudinal slope is \(\beta_{\text{within}} = 0.7229\)
+(\(SE = 0.1526, p = 2.32 \times 10^{-6}, 95\% \text{ CI: } [0.4236, 1.0222]\)),
+yielding an Easterlin point ratio of \textbf{\texttt{1.0311}}.
+
+Estimating the bivariate Mundlak specification yields
+\(\gamma = \beta_{\text{between}} - \beta_{\text{within}} = +0.0533\)
+(\(SE = 0.1582, z = 0.337, p = 0.7360\); Wald \(\chi^2(1) = 0.1137\)).
+\textbf{We find no statistically detectable difference between the
+between-country and within-country income slopes (\(p = 0.7360\)),
+though the within-country estimate is imprecise}. The data are
+consistent with both moderate and strong longitudinal gains; the
+evidence does not license claiming that Easterlin's paradox is rejected.
+Controlling for secular global growth via Two-Way Fixed Effects yields
+\(\beta_{\text{within, twoway}} = 0.7175\)
+(\(SE = 0.1807, 95\% \text{ CI: } [0.3631, 1.0719]\)), producing a ratio
+of \textbf{\texttt{1.0388}} (\emph{Figure 1}).
+
+\hypertarget{finding-2-conditional-multivariate-panel-slopes-institutional-absorption}{%
+\subsubsection{Finding 2: Conditional Multivariate Panel Slopes \&
+Institutional
+Absorption}\label{finding-2-conditional-multivariate-panel-slopes-institutional-absorption}}
+
+When all six WHR drivers are entered simultaneously into panel
+regressions, the between-country income coefficient drops sharply to
+\(\beta_{\text{between}} = 0.3106\), while the within-country
+coefficient is \(\beta_{\text{within}} = 0.5626\)
+(\(SE = 0.1098, p = 3.28 \times 10^{-7}\)). The multivariate Mundlak
+Wald test rejects slope equality jointly across all six drivers
+(\(\chi^2(6) = 16.7814, p = 0.0101\)) and for Log GDP specifically
+(\(\chi^2(1) = 4.9606, p = 0.0259\)). This divergence occurs because
+cross-sectional differences in income are heavily collinear with
+country-mean social support (\(\beta = 2.4157\)) and life expectancy
+(\(\beta = 0.0305, \chi^2=7.87, p=0.0050\)), which absorb
+between-country income variation.
+
+\hypertarget{finding-3-breakpoint-fragility-accelerated-non-satiation}{%
+\subsubsection{Finding 3: Breakpoint Fragility \& Accelerated
+Non-Satiation}\label{finding-3-breakpoint-fragility-accelerated-non-satiation}}
+
+Evaluating the multivariate piecewise model reveals severe sensitivity
+to threshold selection (\emph{Figure 2}):
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.09}}
+  >{\centering\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.11}}
+  >{\centering\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.11}}
+  >{\centering\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.11}}
+  >{\centering\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.11}}
+  >{\centering\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.11}}
+  >{\centering\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.11}}
+  >{\centering\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.11}}
+  >{\centering\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.11}}@{}}
+\toprule
+Specification & Threshold \(\tau\) & \(N_{\text{below}}\) (\%) &
+\(N_{\text{above}}\) (\%) & Slope Below (\(\beta_1\)) & Slope Change
+(\(\beta_2\)) & Slope Above (\(\beta_1 + \beta_2\)) & \(R^2\) & AIC \\
+\midrule
+\endhead
+\textbf{Sample AIC Minimum} & 7.648 & 210 (9.99\%) & 1,893 (90.01\%) &
+-0.2811 (\(p=0.0600\)) & +0.7026 (\(p=4.26 \times 10^{-5}\)) & +0.4215
+(\(p=2.96 \times 10^{-9}\)) & 0.7590 & 3527.16 \\
+\textbf{Substantively Preferred} & 9.405 & 986 (46.89\%) & 1,117
+(53.11\%) & +0.2349 (\(p=0.0045\)) & +0.2988 (\(p=0.0205\)) & +0.5337
+(\(p=1.23 \times 10^{-7}\)) & 0.7581 & 3534.97 \\
+\bottomrule
+\end{longtable}
+
+The 1,000 country-block bootstrap resamples produce a bimodal AIC
+distribution spanning a 95\% confidence interval of
+\(\tau \in [7.5319, 10.8600]\) (\(\approx \$1,867\) to \(\$52,052\)).
+The lower mode (\(\tau = 7.648\)) is identified off a thin tail
+(\(9.99\%\) of panel rows) and estimates an economically implausible
+negative lower slope (\(\beta_1 = -0.2811\)), which is statistically
+indistinguishable from zero (\(p = 0.0600\)) and represents a
+small-sample tail artifact. The substantively preferred threshold is
+\(\tau = 9.405\) (the bootstrap median), where the lower slope is
+positive (\(\beta_1 = +0.2349, p = 0.0045\)) and the upper slope
+accelerates to \(+0.5337\) (\(p < 0.0001\)). Across both specifications,
+\textbf{we find no evidence of income satiation; rather, the
+income-happiness relationship accelerates above the breakpoint}.
+
+\hypertarget{finding-4-temporal-generalization-vs.-lagged-outcome-persistence}{%
+\subsubsection{Finding 4: Temporal Generalization vs.~Lagged Outcome
+Persistence}\label{finding-4-temporal-generalization-vs.-lagged-outcome-persistence}}
+
+On the forward-chaining temporal split (Train \(\le 2018\); Test
+\(2019–2023\), matched \(N = 595\)), models trained only on
+contemporaneous WHR drivers achieve test \(R^2 = 0.7604\) (Linear OLS,
+\(RMSE = 0.5468\)) and \(R^2 = 0.7731\) (Random Forest,
+\(RMSE = 0.5321\)). The naive prior-year persistence baseline achieves
+\(R^2 = 0.8671\) (\(RMSE = 0.4072\)).
+
+When augmented with the lagged outcome (\(Y_{i, t-1}\)), Linear OLS
+achieves \(R^2 = 0.8913\) (\(RMSE = 0.3682\)) and Random Forest achieves
+\(R^2 = 0.8804\) (\(RMSE = 0.3864\)) (\emph{Figure 3}). A nested model
+\(F\)-test proves that adding the six contemporaneous drivers to the
+lagged outcome model yields a statistically significant improvement
+(\(F(6, 587) = 28.4171, p < 10^{-20}\)), reducing test sum of squared
+errors from \(96.15\) to \(74.51\).
+
+\hypertarget{finding-5-cross-country-out-of-sample-generalization-groupkfold}{%
+\subsubsection{Finding 5: Cross-Country Out-of-Sample Generalization
+(GroupKFold)}\label{finding-5-cross-country-out-of-sample-generalization-groupkfold}}
+
+Under 5-fold cross-validation grouped strictly by country
+(\(N = 2,103\)), predictive performance degrades substantially: Linear
+OLS achieves mean test \(R^2 = 0.7065\) (\(RMSE = 0.5850\)), while
+Random Forest achieves mean test \(R^2 = 0.6940\) (\(RMSE = 0.6068\)).
+This gap demonstrates that standard random-split cross-validation
+(\(R^2 = 0.8663\)) suffered severe information leakage by memorizing
+country-specific baseline happiness.
+
+\hypertarget{finding-6-evaluative-life-satisfaction-vs.-emotional-affect}{%
+\subsubsection{Finding 6: Evaluative Life Satisfaction vs.~Emotional
+Affect}\label{finding-6-evaluative-life-satisfaction-vs.-emotional-affect}}
+
+Estimating fully standardized regressions where both outcomes and
+predictors are \(z\)-scored confirms the Kahneman \& Deaton (2010)
+hypothesis across the global panel (\emph{Figure 4}): - \textbf{Cantril
+Life Ladder (Evaluation)}: Standardized Log GDP \(\beta = +0.3623\)
+(\(SE = 0.0226, p < 0.0001, R^2 = 0.7532\)). - \textbf{Positive Affect
+(Daily Emotion)}: Standardized Log GDP \(\beta = -0.1523\)
+(\(SE = 0.0344, p = 1.02 \times 10^{-5}, R^2 = 0.4274\)). -
+\textbf{Negative Affect (Daily Distress)}: Standardized Log GDP
+\(\beta = -0.0527\) (\(SE = 0.0383, p = 0.1683, R^2 = 0.2906\)).
+
+National economic output is strongly associated with cognitive life
+evaluation, but shows a negative relationship with positive daily affect
+and a statistically null relationship with negative affect.
+
+\hypertarget{finding-7-relative-regional-income-economic-spillovers}{%
+\subsubsection{Finding 7: Relative Regional Income \& Economic
+Spillovers}\label{finding-7-relative-regional-income-economic-spillovers}}
+
+Testing the relative income hypothesis by entering own-country Log GDP
+(\(X_{it}\)) and regional mean Log GDP (\(M_{rt}\)) into panel models
+yields: - \textbf{Pooled OLS}: Own GDP \(\beta = +0.3321\)
+(\(p = 8.10 \times 10^{-7}\)); Regional Mean GDP \(\beta = +0.0892\)
+(\(p = 0.1706\), not statistically significant). - \textbf{Two-Way Fixed
+Effects}: Own GDP \(\beta = +0.5543\) (\(p < 0.0001\)); Regional Mean
+GDP \(\beta = +0.1235\) (\(p = 0.1568\), not statistically significant).
+
+Variance Inflation Factors (\(VIF = 4.69\) for own GDP, \(VIF = 2.81\)
+for regional GDP) confirm no severe multicollinearity. Because the
+regional mean coefficient is positive rather than negative, the
+international panel provides no evidence of negative social comparison
+spillovers; regional wealth exerts a weakly positive spillover.
+
+\hypertarget{finding-8-unobserved-geographic-baseline-differences-residual-autocorrelation}{%
+\subsubsection{Finding 8: Unobserved Geographic Baseline Differences \&
+Residual
+Autocorrelation}\label{finding-8-unobserved-geographic-baseline-differences-residual-autocorrelation}}
+
+Filtering nations with fewer than 8 observations removes 23 countries
+(e.g., Somalia \(N=3\), Qatar \(N=1\), Guyana \(N=1\)) to prevent
+small-sample distortion, retaining 132 stable national series.
+Re-centering country fixed effects to mean zero reveals persistent
+unobserved geographic differences (\emph{Figure 5}): - \textbf{Top
+Over-Performers (Deviation from Global Mean)}: Mexico (\(+1.0915\),
+\(N=17\)), Israel (\(+1.0798\), \(N=17\)), Costa Rica (\(+0.9879\),
+\(N=18\)), Pakistan (\(+0.9418\), \(N=17\)), Brazil (\(+0.8976\),
+\(N=16\)). - \textbf{Top Under-Performers (Deviation from Global Mean)}:
+Botswana (\(-1.8066\), \(N=14\)), Sri Lanka (\(-1.3909\), \(N=17\)),
+Tanzania (\(-0.9512\), \(N=18\)), Lebanon (\(-0.8559\), \(N=17\)),
+Bulgaria (\(-0.7929\), \(N=15\)). - \textbf{Regional ANOVA}:
+\(F(5, 126) = 4.7126, p = 5.58 \times 10^{-4}\) (mathematically
+identical for raw and centered effects). Regional means indicate that
+North America (\(+0.3998, 95\% \text{ CI: } [0.1000, 0.6995]\)) and
+South America (\(+0.3547, 95\% \text{ CI: } [0.1470, 0.5623]\)) maintain
+positive baseline premiums, Europe is near average (\(+0.0160\)), while
+Africa (\(-0.1121\)) and Asia (\(-0.1600\)) underperform their factor
+endowments. Oceania (\(+0.1489, N=2\), Australia and New Zealand) is not
+interpretable due to small sample size. - \textbf{Residual
+Autocorrelation}: Idiosyncratic panel residuals exhibit moderate serial
+persistence (within-country lag-1 correlation \(r = 0.4519\),
+Durbin-Watson \(= 1.1723\)).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{discussion}{%
+\subsection{9. Discussion}\label{discussion}}
+
+\hypertarget{the-fragility-of-empirical-satiation-thresholds}{%
+\subsubsection{The Fragility of Empirical Satiation
+Thresholds}\label{the-fragility-of-empirical-satiation-thresholds}}
+
+Our findings illustrate why previous literature reached divergent
+conclusions regarding income thresholds. In cross-national panels,
+continuous piecewise thresholds minimizing estimation criteria are prone
+to identification failures. On the complete-case WHR panel, the
+objective surface exhibits two distinct local minima: a lower mode
+(\(\tau \approx 7.65\)) and an upper mode (\(\tau \approx 9.41\)).
+Selecting the global sample minimum (\(\tau = 7.648\)) identifies a
+threshold off the bottom 10\% tail, producing an implausible negative
+lower slope. When resampled by country, 57\% of bootstrap draws identify
+the upper mode (\(\tau = 9.405\)), where both lower and upper slopes are
+positive. The data provide no evidence that national well-being plateaus
+at high income levels.
+
+\hypertarget{mediation-in-the-conditional-vs.-unconditional-contrast}{%
+\subsubsection{Mediation in the Conditional vs.~Unconditional
+Contrast}\label{mediation-in-the-conditional-vs.-unconditional-contrast}}
+
+The contrast between bivariate and multivariate panel models reveals an
+important institutional mediation pathway. In unconditioned bivariate
+models, between- and within-country income slopes are statistically
+indistinguishable (\(\beta \approx 0.72 - 0.75, p = 0.7360\)). However,
+when non-income drivers are included, the cross-sectional income
+coefficient declines to \(0.3106\), while the within-country coefficient
+remains \(0.5626\). Across countries, wealth strongly co-moves with
+institutional capacity, public health, and social capital. In the
+cross-section, these institutional variables absorb much of the apparent
+income effect. Longitudinally within countries, institutional factors
+adjust slowly, allowing economic fluctuations to directly register on
+national life satisfaction.
+
+\hypertarget{self-audit-ranking-comparison-method-change}{%
+\subsubsection{Self-Audit: Ranking Comparison Method
+Change}\label{self-audit-ranking-comparison-method-change}}
+
+In early exploratory analysis, a Spearman rank correlation between
+unstandardized OLS slopes and Random Forest Mean Decrease in Impurity
+(MDI) yielded a near-zero negative correlation
+(\(\rho = -0.0857, p = 0.8717\)). This metric was discarded as
+mathematically flawed: unstandardized regression slopes depend on
+arbitrary physical measurement scales (e.g., life expectancy measured in
+decades vs.~social support on a 0--1 scale), while MDI measures total
+variance reduction across tree splits. Replacing unstandardized
+coefficients with standardized regression coefficients
+(\(\beta \times \text{SD}(X) / \text{SD}(Y)\)) and evaluating Random
+Forest feature importance via out-of-fold permutation importance yields
+strong ranking agreement
+(\(\rho = \mathbf{0.8857}, p = \mathbf{0.0188}\)).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{limitations}{%
+\subsection{10. Limitations}\label{limitations}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Within-Country Imprecision}: The bivariate within-country
+  income estimate has a wide confidence interval
+  (\(95\% \text{ CI: } [0.4236, 1.0222]\)). While equality with the
+  between-country slope cannot be rejected, the estimate remains
+  statistically consistent with both modest and substantial growth
+  elasticities.
+\item
+  \textbf{Identification Interval of Breakpoint}: The structural
+  threshold \(\tau\) is not identified at a single point; the AIC
+  surface is bimodal, and the 95\% block bootstrap interval spans
+  \(\tau \in [7.5319, 10.8600]\) (\(\approx \$1,867\) to \(\$52,052\)).
+\item
+  \textbf{Non-Random Complete-Case Attrition}: Listwise deletion removes
+  \(11.00\%\) of observations, with \(67.69\%\) of dropped records
+  concentrated in Asia. Dropped observations represent wealthier and
+  happier country-years with missing governance metrics.
+\item
+  \textbf{Observational Inference}: All findings represent observational
+  statistical associations. We deploy no instrumental variables or
+  natural experiments; coefficients cannot be interpreted as causal
+  policy effects.
+\item
+  \textbf{Cluster Stability}: \(K=4\) was selected for substantive
+  interpretability against silhouette scores and exhibits moderate
+  bootstrap stability (mean Jaccard index \(= 0.5864\)).
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{conclusion-and-future-work}{%
+\subsection{11. Conclusion and Future
+Work}\label{conclusion-and-future-work}}
+
+Across 19 years of the World Happiness Report, the empirical record
+demonstrates that: 1. National life satisfaction tracks economic growth
+over time within countries at a magnitude statistically
+indistinguishable from cross-sectional between-country differences
+(\(p = 0.7360\)), though longitudinal estimates remain imprecise. 2.
+Empirical income satiation is unsupported; subjective well-being
+accelerates rather than flattens at higher income levels. 3. National
+well-being exhibits strong temporal persistence: historical happiness
+levels serve as the single strongest predictor of future scores, though
+contemporaneous drivers provide statistically significant incremental
+information (\(F = 28.42, p < 10^{-20}\)).
+
+Future research should incorporate country-level panel instruments to
+isolate exogenous economic shocks, deploy high-frequency longitudinal
+surveys to capture sub-annual affect dynamics, and investigate
+institutional mechanisms that insulate baseline well-being against
+macroeconomic downturns.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{references}{%
+\subsection{12. References}\label{references}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Easterlin, R. A.} (1974). Does economic growth improve the
+  human lot? Some empirical evidence. In P. A. David \& M. W. Reder
+  (Eds.), \emph{Nations and Households in Economic Growth: Essays in
+  Honor of Moses Abramovitz} (pp.~89--125). Academic Press.
+\item
+  \textbf{Stevenson, B., \& Wolfers, J.} (2008). Economic growth and
+  subjective well-being: Reassessing the Easterlin paradox.
+  \emph{Brookings Papers on Economic Activity}, 2008(1), 1--87.
+\item
+  \textbf{Kahneman, D., \& Deaton, A.} (2010). High income improves
+  evaluation of life but not emotional well-being. \emph{Proceedings of
+  the National Academy of Sciences}, 107(38), 16489--16493.
+\item
+  \textbf{Killingsworth, M. A.} (2021). Experienced well-being rises
+  with income, even above \$75,000 per year. \emph{Proceedings of the
+  National Academy of Sciences}, 118(4), e2016976118.
+\item
+  \textbf{Killingsworth, M. A., Kahneman, D., \& Mellers, B.} (2023).
+  Income and emotional well-being: A conflict resolved.
+  \emph{Proceedings of the National Academy of Sciences}, 120(10),
+  e2208661120.
+\item
+  \textbf{Helliwell, J. F., Layard, R., Sachs, J. D., De Neve, J.-E.,
+  Aknin, L. B., \& Wang, S.} (Eds.). (2024). \emph{World Happiness
+  Report 2024}. University of Oxford: Wellbeing Research Centre.
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{appendix-methodological-tables}{%
+\subsection{13. Appendix: Methodological
+Tables}\label{appendix-methodological-tables}}
+
+\hypertarget{table-a1-bivariate-panel-estimators-easterlin-paradox-test}{%
+\subsubsection{Table A1: Bivariate Panel Estimators (Easterlin Paradox
+Test)}\label{table-a1-bivariate-panel-estimators-easterlin-paradox-test}}
+
+\emph{Source:
+\href{file:///Users/srinivasch/Desktop/Happiscope/outputs/bivariate_panel_models.csv}{\texttt{outputs/bivariate\_panel\_models.csv}}}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.09}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.09}}
+  >{\centering\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.12}}
+  >{\centering\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.12}}
+  >{\centering\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.12}}
+  >{\centering\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.12}}
+  >{\centering\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.12}}
+  >{\centering\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.12}}
+  >{\centering\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.12}}@{}}
+\toprule
+Estimator & Specification & Beta & SE & \(p\)-value & \(95\%\) CI &
+\(R^2\) & \(N_{\text{obs}}\) & \(N_{\text{countries}}\) \\
+\midrule
+\endhead
+1. Pooled OLS & Homoskedastic SE & 0.7750 & 0.0132 & \(<0.0001\) &
+{[}0.7490, 0.8009{]} & 0.6198 & 2,103 & 155 \\
+1b. Pooled OLS & Clustered SE & 0.7750 & 0.0353 & \(<0.0001\) &
+{[}0.7058, 0.8442{]} & 0.6198 & 2,103 & 155 \\
+2. Between Estimator & Country Means & 0.7454 & 0.0398 & \(<0.0001\) &
+{[}0.6668, 0.8240{]} & 0.6964 & 155 & 155 \\
+3. Within FE & Country FE Only & 0.7229 & 0.1526 &
+\(2.32 \times 10^{-6}\) & {[}0.4236, 1.0222{]} & 0.0974 & 2,103 & 155 \\
+4. Within FE & Country + Year FE & 0.7175 & 0.1807 &
+\(7.43 \times 10^{-5}\) & {[}0.3631, 1.0719{]} & 0.0974 & 2,103 & 155 \\
+\bottomrule
+\end{longtable}
+
+\hypertarget{table-a2-multivariate-conditional-driver-decomposition}{%
+\subsubsection{Table A2: Multivariate Conditional Driver
+Decomposition}\label{table-a2-multivariate-conditional-driver-decomposition}}
+
+\emph{Source:
+\href{file:///Users/srinivasch/Desktop/Happiscope/outputs/panel_models_comparison.csv}{\texttt{outputs/panel\_models\_comparison.csv}}}
+
+\begin{longtable}[]{@{}lccccc@{}}
+\toprule
+Driver & Pooled Beta & Between Beta & Within Beta & Clustered SE &
+Within \(p\)-value \\
+\midrule
+\endhead
+Log GDP per capita & +0.3566 & +0.3106 & +0.5626 & 0.1098 &
+\(3.28 \times 10^{-7}\) \\
+Social support & +2.6272 & +2.4157 & +2.4137 & 0.3225 &
+\(1.09 \times 10^{-13}\) \\
+Healthy life expectancy & +0.0258 & +0.0305 & -0.0101 & 0.0089 &
+0.2587 \\
+Freedom to make choices & +1.2308 & +1.6438 & +0.8543 & 0.2299 &
+\(2.08 \times 10^{-4}\) \\
+Generosity & +0.5174 & +0.4410 & +0.6206 & 0.2060 &
+\(2.62 \times 10^{-3}\) \\
+Perceptions of corruption & -0.7417 & -0.6163 & -0.8282 & 0.2221 &
+\(1.97 \times 10^{-4}\) \\
+\bottomrule
+\end{longtable}
+
+\hypertarget{table-a3-predictive-benchmark-evaluation-forward-chaining-temporal-split-20192023}{%
+\subsubsection{Table A3: Predictive Benchmark Evaluation
+(Forward-Chaining Temporal Split
+2019--2023)}\label{table-a3-predictive-benchmark-evaluation-forward-chaining-temporal-split-20192023}}
+
+\emph{Source:
+\href{file:///Users/srinivasch/Desktop/Happiscope/outputs/validation_leak_free_benchmarks.csv}{\texttt{outputs/validation\_leak\_free\_benchmarks.csv}}}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.12}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.12}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.12}}
+  >{\centering\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.16}}
+  >{\centering\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.16}}
+  >{\centering\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.16}}
+  >{\centering\arraybackslash}p{(\columnwidth - 12\tabcolsep) * \real{0.16}}@{}}
+\toprule
+Model & Features & Protocol & Test \(R^2\) & RMSE & MAE & Test \(N\) \\
+\midrule
+\endhead
+Linear OLS & 6 Contemporaneous Drivers & Temporal Split (2019--2023) &
+0.7604 & 0.5468 & 0.4132 & 595 \\
+Random Forest & 6 Contemporaneous Drivers & Temporal Split (2019--2023)
+& 0.7731 & 0.5321 & 0.4002 & 595 \\
+Naive Prior-Year Baseline & Lagged Life Ladder (\(Y_{i, t-1}\)) & Has
+access to lagged outcome & 0.8671 & 0.4072 & 0.2876 & 595 \\
+Linear OLS (Augmented) & 6 Drivers + Lagged Ladder & Temporal Split
+(2019--2023) & 0.8913 & 0.3682 & 0.2623 & 595 \\
+Random Forest (Augmented) & 6 Drivers + Lagged Ladder & Temporal Split
+(2019--2023) & 0.8804 & 0.3864 & 0.2759 & 595 \\
+Linear OLS (Generalization) & 6 Contemporaneous Drivers & GroupKFold
+(5-Fold Country) & 0.7065 & 0.5850 & 0.4506 & 2,103 \\
+Random Forest (Generalization) & 6 Contemporaneous Drivers & GroupKFold
+(5-Fold Country) & 0.6940 & 0.6068 & 0.4712 & 2,103 \\
+\bottomrule
+\end{longtable}
