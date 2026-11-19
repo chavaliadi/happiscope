@@ -21,6 +21,7 @@ This document serves as the authoritative Numbers Register for HappiScope. Every
 | Easterlin Ratio (Between / Within Country-Only) | `1.0311` | Point Ratio of Between Beta (0.7454) to Within Country-FE Beta (0.7229) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
 | Secular-Trend-Absorbed Ratio (Between / Within Two-Way) | `1.0388` | Point Ratio of Between Beta (0.7454) to Within Two-Way FE Beta (0.7175) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
 | Joint Test of Year Fixed Effects | `1075.24` | Wald $\chi^2(18)$ Test ($p = 5.75 \times 10^{-217}$, Strongly Significant) | Verification Step C | Session Terminal |
+| Centered Year Effects Linear Trend (2006–2023) | `+0.0015` | OLS Slope on Centered Year Effects ($SE=0.0031, p=0.6449, R^2=0.0136$) | Verification Step 1 | `outputs/year_effects_linear_trend.csv` |
 
 ### Multivariate Specifications (Conditional / Partial Effects Controlling for Other 5 WHR Drivers)
 
@@ -118,14 +119,17 @@ This document serves as the authoritative Numbers Register for HappiScope. Every
 | Claim / Metric | Value | Model / Specification | Producing Function | Source File / Output Artifact |
 |---|---|---|---|---|
 | Life Ladder Raw SD | `1.1357` | Complete Cases (N=2,103, Mean=5.465) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
-| Life Ladder Fully-Standardized GDP Beta | `+0.3623` | Both Outcome and Predictors z-scored ($SE=0.0226$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
-| Life Ladder Model $R^2$ | `0.7532` | Scale-Free Explained Variance | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
+| Life Ladder Bivariate GDP Beta (Pairwise) | `+0.7836` | Unconditional OLS, Pairwise ($N=2,335, SE=0.0129, p<0.0001, R^2=0.6140$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
+| Life Ladder Bivariate GDP Beta (Complete Cases) | `+0.7873` | Unconditional OLS, Complete Sample ($N=2,103, SE=0.0135, p<0.0001, R^2=0.6198$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
+| Life Ladder Conditional GDP Beta | `+0.3623` | Fully Standardized, Controlling for 5 Drivers ($SE=0.0226, p=8.69e-55, R^2=0.7532$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
 | Positive Affect Raw SD | `0.1074` | Complete Cases (N=2,098, Mean=0.6538) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
-| Positive Affect Fully-Standardized GDP Beta | `-0.1523` | Both Outcome and Predictors z-scored ($SE=0.0344, p=1.02e-05$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
-| Positive Affect Model $R^2$ | `0.4274` | Scale-Free Explained Variance | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
+| Positive Affect Bivariate GDP Beta (Pairwise) | `+0.2309` | Unconditional OLS, Pairwise ($N=2,311, SE=0.0202, p=2.46e-29, R^2=0.0533$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
+| Positive Affect Bivariate GDP Beta (Complete Cases) | `+0.2226` | Unconditional OLS, Complete Sample ($N=2,098, SE=0.0213, p=5.75e-25, R^2=0.0495$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
+| Positive Affect Conditional GDP Beta | `-0.1523` | Fully Standardized, Controlling for 5 Drivers ($SE=0.0344, p=1.02e-05, R^2=0.4274$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
 | Negative Affect Raw SD | `0.0854` | Complete Cases (N=2,102, Mean=0.2747) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
-| Negative Affect Fully-Standardized GDP Beta | `-0.0527` | Both Outcome and Predictors z-scored ($SE=0.0383, p=0.1683$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
-| Negative Affect Model $R^2$ | `0.2906` | Scale-Free Explained Variance | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
+| Negative Affect Bivariate GDP Beta (Pairwise) | `-0.2607` | Unconditional OLS, Pairwise ($N=2,319, SE=0.0201, p=2.46e-37, R^2=0.0680$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
+| Negative Affect Bivariate GDP Beta (Complete Cases) | `-0.2691` | Unconditional OLS, Complete Sample ($N=2,102, SE=0.0210, p=3.30e-36, R^2=0.0724$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
+| Negative Affect Conditional GDP Beta | `-0.0527` | Fully Standardized, Controlling for 5 Drivers ($SE=0.0383, p=0.1683, R^2=0.2906$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
 
 ---
 

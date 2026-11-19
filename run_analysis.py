@@ -260,21 +260,30 @@ def main():
     ax3.legend()
     save_figure_multi_format(fig3, fig_dir / "fig3_leak_free_model_benchmarks")
     
-    # Figure 4: Affect Model Comparison
-    fig4, ax4 = plt.subplots(figsize=(8, 5))
+    # Figure 4: Affect Model Comparison (Bivariate vs Conditional)
+    fig4, ax4 = plt.subplots(figsize=(9, 5))
     aff_tab = aff_res["summary_table"]
     x = np.arange(len(aff_tab))
-    bars = ax4.bar(x, aff_tab["Fully_Standardized_Log_GDP_Beta"], yerr=aff_tab["SE"], capsize=4, color=["#4e79a7", "#76b7b2", "#f28e2b"])
-    ax4.axhline(0, color="#888888", linestyle="--")
+    width = 0.35
+    
+    bars1 = ax4.bar(x - width/2, aff_tab["Bivariate_Beta"], width=width, yerr=aff_tab["Bivariate_SE"],
+                    capsize=4, color="#4e79a7", label="Bivariate (Unconditional)")
+    bars2 = ax4.bar(x + width/2, aff_tab["Fully_Standardized_Log_GDP_Beta"], width=width, yerr=aff_tab["SE"],
+                    capsize=4, color="#e15759", label="Conditional (Controlling for 5 Non-Income Drivers)")
+    
+    ax4.axhline(0, color="#888888", linestyle="--", linewidth=0.8)
     ax4.set_xticks(x)
     ax4.set_xticklabels(aff_tab["Outcome"])
     ax4.set_ylabel("Standardized Log GDP Beta (SD / SD)")
-    ax4.set_title("Income Predicts Life Evaluation, Not Day-to-Day Affect (Kahneman & Deaton)")
-    for b, r2 in zip(bars, aff_tab["R_squared"]):
+    ax4.set_title("Life Evaluation vs. Emotional Affect: Bivariate vs. Conditional Slopes")
+    ax4.legend(loc="upper right")
+    
+    for b in list(bars1) + list(bars2):
         h = b.get_height()
-        offset = 5 if h >= 0 else -15
-        ax4.annotate(f"R2={r2:.3f}", xy=(b.get_x() + b.get_width() / 2, h),
-                     xytext=(0, offset), textcoords="offset points", ha="center")
+        offset = 4 if h >= 0 else -14
+        ax4.annotate(f"{h:+.2f}", xy=(b.get_x() + b.get_width() / 2, h),
+                     xytext=(0, offset), textcoords="offset points", ha="center", fontsize=8)
+                     
     save_figure_multi_format(fig4, fig_dir / "fig4_affect_standardized_comparison")
     
     # Figure 5: Regional Residual Country Effects

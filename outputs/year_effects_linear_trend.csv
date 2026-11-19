@@ -1,0 +1,2 @@
+Metric,Slope,SE,t_stat,p_value,R2,CI_lower_95,CI_upper_95,Interpretation
+Centered Year Effects Linear Trend (2006-2023),0.001467,0.003122,0.4697,0.64488,0.0136,-0.005153,0.008086,Statistically flat trend (p = 0.6449)

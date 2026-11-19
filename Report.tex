@@ -1,17 +1,100 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\author{}
+\date{}
+
+\begin{document}
+
 \hypertarget{econometric-panel-decomposition-structural-breakpoints-and-predictive-generalization-in-the-world-happiness-report-20052023}{%
 \section{Econometric Panel Decomposition, Structural Breakpoints, and
 Predictive Generalization in the World Happiness Report
 (2005--2023)}\label{econometric-panel-decomposition-structural-breakpoints-and-predictive-generalization-in-the-world-happiness-report-20052023}}
 
-\textbf{Authors:} HappiScope Research Team\\
-\textbf{Supervisor:} Academic Panel Review Board\\
-\textbf{Institution:} Advanced Empirical Analytics Group\\
+\textbf{Authors:}\\
+- Pandiri Ananya (IIT2023023)\\
+- Peer Singh (IIT2023197)\\
+- Adithya Chavali (IEC2023023)
+
+\textbf{Supervisor:} Dr.~Ramesh Kumar Bhukya\\
+\textbf{Institution:} Indian Institute of Information Technology,
+Allahabad\\
+\textbf{Course:} Science of Happiness (Independent Self-Study)\\
 \textbf{Date:} November 2026
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \hypertarget{abstract}{%
-\subsection{2. Abstract}\label{abstract}}
+\subsection{1. Abstract}\label{abstract}}
 
 This study provides an econometric and machine learning re-evaluation of
 the World Happiness Report panel (2005--2023), covering 165 nations.
@@ -45,7 +128,7 @@ substantial historical persistence in national well-being.
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \hypertarget{introduction-and-motivation}{%
-\subsection{3. Introduction and
+\subsection{2. Introduction and
 Motivation}\label{introduction-and-motivation}}
 
 Subjective well-being research frequently informs national policy
@@ -76,10 +159,11 @@ inference.
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \hypertarget{literature-survey}{%
-\subsection{4. Literature Survey}\label{literature-survey}}
+\subsection{3. Literature Survey}\label{literature-survey}}
 
-The empirical framework of this investigation is grounded strictly in
-five foundational studies:
+The empirical framework of this investigation is grounded in
+foundational studies from the well-being literature and the World
+Happiness Report:
 
 \begin{longtable}[]{@{}
   >{\centering\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.29}}
@@ -138,13 +222,36 @@ non-financial distress. \textbf{Limitation}: Individual-level microdata;
 cannot be mapped directly to cross-national macro aggregates. &
 Satiation is heterogeneous: emotional well-being plateaus only for the
 least happy quantile, while expanding for the broader population. \\
+6 & \textbf{Diener, E., Suh, E. M., Lucas, R. E., \& Smith, H. L.
+(1999)}. \emph{Subjective well-being: Three decades of progress}.
+Psychological Bulletin, 125(2), 276--302. & Narrative review
+synthesizing three decades of research across demographic, economic, and
+psychological dimensions. Found that economic factors explain only part
+of well-being variance, with social relationships, personality traits,
+and psychological coping mechanisms explaining substantial additional
+variation. \textbf{Limitation}: Broad qualitative review summarizing
+disparate cross-sectional and longitudinal studies without unified
+econometric panel modeling. & Economic factors account for only a
+portion of well-being; social connections, psychological factors, and
+adaptation play substantial roles. \\
+7 & \textbf{Helliwell, J. F., Layard, R., Sachs, J. D., De Neve, J.-E.,
+Aknin, L. B., \& Wang, S. (2024)}. \emph{World Happiness Report 2024}.
+University of Oxford: Wellbeing Research Centre. & Flagship
+international survey report tracking national subjective well-being
+(Cantril Life Ladder) across 140+ countries. Uses pooled cross-sectional
+regressions to decompose national happiness into six explanatory
+factors. \textbf{Limitation}: Relies on pooled cross-sectional models
+without accounting for country fixed effects, unobserved heterogeneity,
+or dynamic panel persistence. & Evaluative life satisfaction varies
+substantially across countries and is correlated with income, social
+support, health, freedom, generosity, and corruption perceptions. \\
 \bottomrule
 \end{longtable}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \hypertarget{research-gap-and-problem-statement}{%
-\subsection{5. Research Gap and Problem
+\subsection{4. Research Gap and Problem
 Statement}\label{research-gap-and-problem-statement}}
 
 Despite decades of scholarship, cross-national analytical applications
@@ -173,7 +280,7 @@ learning baselines across the complete 2005--2023 WHR panel.
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \hypertarget{dataset-description-and-attrition-analysis}{%
-\subsection{6. Dataset Description and Attrition
+\subsection{5. Dataset Description and Attrition
 Analysis}\label{dataset-description-and-attrition-analysis}}
 
 The source dataset is the official World Happiness Report 2024 update
@@ -198,25 +305,28 @@ Missingness}\label{complete-case-attrition-and-non-random-missingness}}
 
 Enforcing complete-case analysis across all six explanatory variables
 and the Cantril Life Ladder drops 260 observations (\(11.00\%\)),
-yielding an estimation sample of \(N = 2,103\) across 155 countries: -
-\textbf{Geographic Concentration}: Missingness is systematically
-concentrated in Asia, which accounts for 176 of the 260 dropped
-observations (\(67.69\%\)). - \textbf{Economic Profile Differences}: The
-dropped sample is substantially wealthier than the retained sample (mean
-Log GDP of \(9.81\) vs.~\(9.35\)) and reports higher baseline life
-satisfaction (mean Life Ladder of \(5.63\) vs.~\(5.47\)). Missingness is
-driven by non-reporting of corruption and charitable giving indicators
-in Gulf Cooperation Council economies and specific Asian nations.
-Consequently, complete-case regressions slightly under-represent
-high-income Asian institutional profiles.
+yielding an estimation sample of \(N = 2,103\) across 155 countries.
+After complete-case filtering, the effective empirical modelling panel
+spans 2006--2023 (\(N = 2,102\)), with 2005 contributing a single
+isolated observation (Canada, \(N=1\)). Full annual sample distributions
+are detailed in Appendix Table A4: - \textbf{Geographic Concentration}:
+Missingness is systematically concentrated in Asia, which accounts for
+176 of the 260 dropped observations (\(67.69\%\)). - \textbf{Economic
+Profile Differences}: The dropped sample is substantially wealthier than
+the retained sample (mean Log GDP of \(9.81\) vs.~\(9.35\)) and reports
+higher baseline life satisfaction (mean Life Ladder of \(5.63\)
+vs.~\(5.47\)). Missingness is driven by non-reporting of corruption and
+charitable giving indicators in Gulf Cooperation Council economies and
+specific Asian nations. Consequently, complete-case regressions slightly
+under-represent high-income Asian institutional profiles.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \hypertarget{methodology}{%
-\subsection{7. Methodology}\label{methodology}}
+\subsection{6. Methodology}\label{methodology}}
 
 \hypertarget{panel-econometric-estimators}{%
-\subsubsection{7.1 Panel Econometric
+\subsubsection{6.1 Panel Econometric
 Estimators}\label{panel-econometric-estimators}}
 
 To separate cross-sectional from longitudinal dynamics, we estimate four
@@ -231,7 +341,7 @@ Fixed Effects}: Demeans across both countries and survey years, removing
 shared global secular trends (e.g., macroeconomic shocks).
 
 \hypertarget{the-formal-mundlak-specification}{%
-\subsubsection{7.2 The Formal Mundlak
+\subsubsection{6.2 The Formal Mundlak
 Specification}\label{the-formal-mundlak-specification}}
 
 To formally test slope equality, we estimate the Mundlak equation:
@@ -241,7 +351,7 @@ cluster-robust \(t\)-statistic on \(\gamma\) provides the exact test of
 slope divergence (\(H_0: \gamma = 0\)).
 
 \hypertarget{continuous-piecewise-regression-and-block-bootstrap}{%
-\subsubsection{7.3 Continuous Piecewise Regression and Block
+\subsubsection{6.3 Continuous Piecewise Regression and Block
 Bootstrap}\label{continuous-piecewise-regression-and-block-bootstrap}}
 
 We model non-linear income returns using a continuous piecewise hinge:
@@ -253,7 +363,7 @@ a \textbf{whole-country block bootstrap} (1,000 resamples), sampling
 entire country trajectories with replacement.
 
 \hypertarget{leak-free-predictive-validation}{%
-\subsubsection{7.4 Leak-Free Predictive
+\subsubsection{6.4 Leak-Free Predictive
 Validation}\label{leak-free-predictive-validation}}
 
 To eliminate panel leakage, models are benchmarked across two leak-free
@@ -269,7 +379,7 @@ samples.
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \hypertarget{results-eight-empirical-findings}{%
-\subsection{8. Results: Eight Empirical
+\subsection{7. Results: Eight Empirical
 Findings}\label{results-eight-empirical-findings}}
 
 \hypertarget{finding-1-cross-sectional-vs.-longitudinal-income-elasticity-the-easterlin-test}{%
@@ -296,7 +406,31 @@ evidence does not license claiming that Easterlin's paradox is rejected.
 Controlling for secular global growth via Two-Way Fixed Effects yields
 \(\beta_{\text{within, twoway}} = 0.7175\)
 (\(SE = 0.1807, 95\% \text{ CI: } [0.3631, 1.0719]\)), producing a ratio
-of \textbf{\texttt{1.0388}} (\emph{Figure 1}).
+of \textbf{\texttt{1.0388}}.
+
+Because survey year 2005 contributes a single observation (\(N=1\),
+Canada), defining year effects relative to 2005 is degenerate. We
+therefore report grand-mean-centered year effects
+(\(\sum_{t=2005}^{2023} \alpha_t^* = 0\), with offset \(-0.1602\)). The
+18 year fixed effects for 2006--2023 are jointly highly statistically
+significant (\(\chi^2(18) = 1,075.24, p = 5.75 \times 10^{-217}\)).
+Fitting an Ordinary Least Squares linear trend across the centered year
+effects for 2006--2023 yields a slope of \(+0.001467\) ladder points per
+year
+(\(SE = 0.003122, t = 0.4697, p = 0.6449, R^2 = 0.0136, 95\% \text{ CI: } [-0.005153, +0.008086]\)).
+Once country fixed effects and Log GDP per capita are controlled for,
+global well-being shows a statistically flat trend (\(p = 0.6449\)),
+indicating neither secular progress nor secular decline over this
+18-year period; year effects reflect cyclical macroeconomic and
+geopolitical fluctuations rather than a persistent directional drift.
+
+\begin{figure}
+\centering
+\includegraphics{figures/fig1_panel_estimator_comparison.pdf}
+\caption{Figure 1: Comparison of unstandardized driver coefficients
+across Pooled OLS, Between Estimator, and Two-Way Within Fixed Effects
+(with country-clustered 95\% confidence intervals).}
+\end{figure}
 
 \hypertarget{finding-2-conditional-multivariate-panel-slopes-institutional-absorption}{%
 \subsubsection{Finding 2: Conditional Multivariate Panel Slopes \&
@@ -362,6 +496,14 @@ accelerates to \(+0.5337\) (\(p < 0.0001\)). Across both specifications,
 \textbf{we find no evidence of income satiation; rather, the
 income-happiness relationship accelerates above the breakpoint}.
 
+\begin{figure}
+\centering
+\includegraphics{figures/fig2_breakpoint_bootstrap_and_stability.pdf}
+\caption{Figure 2: Distribution of breakpoint tau under whole-country
+block bootstrap (1,000 resamples) showing bimodal density, alongside
+annual significance p-values of slope change beta2 (2006--2023).}
+\end{figure}
+
 \hypertarget{finding-4-temporal-generalization-vs.-lagged-outcome-persistence}{%
 \subsubsection{Finding 4: Temporal Generalization vs.~Lagged Outcome
 Persistence}\label{finding-4-temporal-generalization-vs.-lagged-outcome-persistence}}
@@ -375,11 +517,20 @@ contemporaneous WHR drivers achieve test \(R^2 = 0.7604\) (Linear OLS,
 
 When augmented with the lagged outcome (\(Y_{i, t-1}\)), Linear OLS
 achieves \(R^2 = 0.8913\) (\(RMSE = 0.3682\)) and Random Forest achieves
-\(R^2 = 0.8804\) (\(RMSE = 0.3864\)) (\emph{Figure 3}). A nested model
-\(F\)-test proves that adding the six contemporaneous drivers to the
-lagged outcome model yields a statistically significant improvement
+\(R^2 = 0.8804\) (\(RMSE = 0.3864\)). A nested model \(F\)-test proves
+that adding the six contemporaneous drivers to the lagged outcome model
+yields a statistically significant improvement
 (\(F(6, 587) = 28.4171, p < 10^{-20}\)), reducing test sum of squared
 errors from \(96.15\) to \(74.51\).
+
+\begin{figure}
+\centering
+\includegraphics{figures/fig3_leak_free_model_benchmarks.pdf}
+\caption{Figure 3: Out-of-sample predictive accuracy (R-squared) across
+forward-chaining temporal splits and GroupKFold cross-validation,
+demonstrating incremental predictive gain from contemporaneous drivers
+over naive persistence.}
+\end{figure}
 
 \hypertarget{finding-5-cross-country-out-of-sample-generalization-groupkfold}{%
 \subsubsection{Finding 5: Cross-Country Out-of-Sample Generalization
@@ -397,19 +548,66 @@ country-specific baseline happiness.
 \subsubsection{Finding 6: Evaluative Life Satisfaction vs.~Emotional
 Affect}\label{finding-6-evaluative-life-satisfaction-vs.-emotional-affect}}
 
-Estimating fully standardized regressions where both outcomes and
-predictors are \(z\)-scored confirms the Kahneman \& Deaton (2010)
-hypothesis across the global panel (\emph{Figure 4}): - \textbf{Cantril
-Life Ladder (Evaluation)}: Standardized Log GDP \(\beta = +0.3623\)
-(\(SE = 0.0226, p < 0.0001, R^2 = 0.7532\)). - \textbf{Positive Affect
-(Daily Emotion)}: Standardized Log GDP \(\beta = -0.1523\)
-(\(SE = 0.0344, p = 1.02 \times 10^{-5}, R^2 = 0.4274\)). -
-\textbf{Negative Affect (Daily Distress)}: Standardized Log GDP
-\(\beta = -0.0527\) (\(SE = 0.0383, p = 0.1683, R^2 = 0.2906\)).
+To examine whether national economic output operates differently on
+cognitive life evaluation versus day-to-day emotional affect (Kahneman
+\& Deaton, 2010), we estimate standardized regressions where both
+outcomes and predictors are \(z\)-scored across both bivariate
+(unconditional) and multivariate (conditional on the remaining five WHR
+drivers) specifications (\emph{Figure 4}):
 
-National economic output is strongly associated with cognitive life
-evaluation, but shows a negative relationship with positive daily affect
-and a statistically null relationship with negative affect.
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.17}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.17}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.17}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.17}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.17}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.17}}@{}}
+\toprule
+Outcome Metric & Outcome Dimension & Bivariate (Unconditional) Std
+\(\beta\) & Conditional (5 Controls) Std \(\beta\) & Conditional Model
+\(R^2\) & Sample \(N\) \\
+\midrule
+\endhead
+\textbf{Cantril Life Ladder} & Evaluative Well-Being &
+\textbf{\(+0.7836\)} (\(SE = 0.0129, p < 0.0001\)) &
+\textbf{\(+0.3623\)} (\(SE = 0.0226, p = 8.69 \times 10^{-55}\)) &
+\(0.7532\) & \(2,103\) \\
+\textbf{Positive Affect} & Daily Positive Mood & \textbf{\(+0.2309\)}
+(\(SE = 0.0202, p = 2.46 \times 10^{-29}\)) & \textbf{\(-0.1523\)}
+(\(SE = 0.0344, p = 1.02 \times 10^{-5}\)) & \(0.4274\) & \(2,098\) \\
+\textbf{Negative Affect} & Daily Distress / Worry & \textbf{\(-0.2607\)}
+(\(SE = 0.0201, p = 2.46 \times 10^{-37}\)) & \textbf{\(-0.0527\)}
+(\(SE = 0.0383, p = 0.1683\)) & \(0.2906\) & \(2,102\) \\
+\bottomrule
+\end{longtable}
+
+\emph{(Note: On the restricted complete-case estimation samples,
+bivariate standardized slopes are \(+0.7873\) for Life Ladder,
+\(+0.2226\) for Positive affect, and \(-0.2691\) for Negative affect).}
+
+Unconditionally, national economic output is moderately associated with
+higher positive daily affect (\(\beta = +0.2309\)) and lower negative
+affect (\(\beta = -0.2607\)). However, once non-economic developmental
+channels are accounted for---\textbf{holding social support, health,
+freedom, generosity, and corruption constant}---the residual partial
+relationship of Log GDP with positive daily affect turns slightly
+negative (\(\beta = -0.1523, p = 1.02 \times 10^{-5}\)), while its
+relationship with negative affect is statistically indistinguishable
+from zero (\(p = 0.1683\)). This divergence demonstrates that day-to-day
+emotional well-being is mediated primarily through personal freedom and
+social capital rather than direct income, whereas cognitive life
+evaluation (Cantril Life Ladder) retains a robust, positive association
+with economic output both unconditionally (\(\beta = +0.7836\)) and
+conditionally (\(\beta = +0.3623\)).
+
+\begin{figure}
+\centering
+\includegraphics{figures/fig4_affect_standardized_comparison.pdf}
+\caption{Figure 4: Comparison of standardized regression coefficients of
+Log GDP on Cantril Life Ladder, Positive Affect, and Negative Affect
+across bivariate (unconditional) and multivariate (conditional on five
+non-income drivers) specifications.}
+\end{figure}
 
 \hypertarget{finding-7-relative-regional-income-economic-spillovers}{%
 \subsubsection{Finding 7: Relative Regional Income \& Economic
@@ -458,10 +656,19 @@ Autocorrelation}: Idiosyncratic panel residuals exhibit moderate serial
 persistence (within-country lag-1 correlation \(r = 0.4519\),
 Durbin-Watson \(= 1.1723\)).
 
+\begin{figure}
+\centering
+\includegraphics{figures/fig5_regional_fixed_effects_ci.pdf}
+\caption{Figure 5: Continental regional distributions of centered
+country fixed effects (deviations from global grand mean) with 95\%
+confidence intervals, illustrating baseline well-being premiums and
+deficits.}
+\end{figure}
+
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \hypertarget{discussion}{%
-\subsection{9. Discussion}\label{discussion}}
+\subsection{8. Discussion}\label{discussion}}
 
 \hypertarget{the-fragility-of-empirical-satiation-thresholds}{%
 \subsubsection{The Fragility of Empirical Satiation
@@ -518,7 +725,7 @@ strong ranking agreement
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \hypertarget{limitations}{%
-\subsection{10. Limitations}\label{limitations}}
+\subsection{9. Limitations}\label{limitations}}
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -554,7 +761,7 @@ strong ranking agreement
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \hypertarget{conclusion-and-future-work}{%
-\subsection{11. Conclusion and Future
+\subsection{10. Conclusion and Future
 Work}\label{conclusion-and-future-work}}
 
 Across 19 years of the World Happiness Report, the empirical record
@@ -578,7 +785,7 @@ macroeconomic downturns.
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \hypertarget{references}{%
-\subsection{12. References}\label{references}}
+\subsection{11. References}\label{references}}
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -606,6 +813,10 @@ macroeconomic downturns.
   \emph{Proceedings of the National Academy of Sciences}, 120(10),
   e2208661120.
 \item
+  \textbf{Diener, E., Suh, E. M., Lucas, R. E., \& Smith, H. L.} (1999).
+  Subjective well-being: Three decades of progress. \emph{Psychological
+  Bulletin}, 125(2), 276--302.
+\item
   \textbf{Helliwell, J. F., Layard, R., Sachs, J. D., De Neve, J.-E.,
   Aknin, L. B., \& Wang, S.} (Eds.). (2024). \emph{World Happiness
   Report 2024}. University of Oxford: Wellbeing Research Centre.
@@ -614,7 +825,7 @@ macroeconomic downturns.
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \hypertarget{appendix-methodological-tables}{%
-\subsection{13. Appendix: Methodological
+\subsection{12. Appendix: Methodological
 Tables}\label{appendix-methodological-tables}}
 
 \hypertarget{table-a1-bivariate-panel-estimators-easterlin-paradox-test}{%
@@ -716,3 +927,94 @@ Random Forest (Generalization) & 6 Contemporaneous Drivers & GroupKFold
 (5-Fold Country) & 0.6940 & 0.6068 & 0.4712 & 2,103 \\
 \bottomrule
 \end{longtable}
+
+\hypertarget{table-a4-complete-case-annual-sample-distribution-20052023}{%
+\subsubsection{Table A4: Complete-Case Annual Sample Distribution
+(2005--2023)}\label{table-a4-complete-case-annual-sample-distribution-20052023}}
+
+\emph{Source:
+\href{file:///Users/srinivasch/Desktop/Happiscope/outputs/year_fixed_effects_table.csv}{\texttt{outputs/year\_fixed\_effects\_table.csv}}}
+
+\begin{longtable}[]{@{}
+  >{\centering\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.26}}
+  >{\centering\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.26}}
+  >{\centering\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.26}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.21}}@{}}
+\toprule
+Year & Complete-Case Countries (\(N\)) & Percentage of Panel
+(\(N=2,103\)) & Note / Coverage Status \\
+\midrule
+\endhead
+2005 & 1 & 0.05\% & Isolated initial survey observation (Canada) \\
+2006 & 75 & 3.57\% & Effective start of global cross-national panel \\
+2007 & 94 & 4.47\% & Global survey rollout expansion \\
+2008 & 101 & 4.80\% & Full multi-continent coverage \\
+2009 & 105 & 4.99\% & Post-financial crisis survey round \\
+2010 & 111 & 5.28\% & Steady global coverage \\
+2011 & 132 & 6.28\% & Peak global panel participation \\
+2012 & 121 & 5.75\% & Broad geographic sample \\
+2013 & 124 & 5.90\% & Broad geographic sample \\
+2014 & 130 & 6.18\% & Broad geographic sample \\
+2015 & 128 & 6.09\% & Broad geographic sample \\
+2016 & 125 & 5.94\% & Broad geographic sample \\
+2017 & 132 & 6.28\% & Peak global panel participation \\
+2018 & 129 & 6.13\% & Historical training window cutoff \\
+2019 & 129 & 6.13\% & Out-of-sample temporal test evaluation \\
+2020 & 105 & 4.99\% & COVID-19 pandemic survey disruption \\
+2021 & 114 & 5.42\% & Post-pandemic recovery \\
+2022 & 127 & 6.04\% & Out-of-sample temporal test evaluation \\
+2023 & 120 & 5.71\% & Out-of-sample temporal test evaluation \\
+\textbf{Total} & \textbf{2,103} & \textbf{100.00\%} & \textbf{Effective
+modelling panel: 2006--2023 (\(N=2,102\))} \\
+\bottomrule
+\end{longtable}
+
+\hypertarget{table-a5-grand-mean-centered-year-fixed-effects-and-linear-trend-20062023}{%
+\subsubsection{Table A5: Grand-Mean-Centered Year Fixed Effects and
+Linear Trend
+(2006--2023)}\label{table-a5-grand-mean-centered-year-fixed-effects-and-linear-trend-20062023}}
+
+\emph{Source:
+\href{file:///Users/srinivasch/Desktop/Happiscope/outputs/year_fixed_effects_table.csv}{\texttt{outputs/year\_fixed\_effects\_table.csv}}
+and
+\href{file:///Users/srinivasch/Desktop/Happiscope/outputs/year_effects_linear_trend.csv}{\texttt{outputs/year\_effects\_linear\_trend.csv}}}
+
+\begin{longtable}[]{@{}
+  >{\centering\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.21}}
+  >{\centering\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.21}}
+  >{\centering\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.21}}
+  >{\centering\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.21}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 8\tabcolsep) * \real{0.17}}@{}}
+\toprule
+Year & Centered Year Effect (\(\alpha_t^*\)) & Cluster-Robust SE &
+\(p\)-value & Substantive Interpretation \\
+\midrule
+\endhead
+2005 & +0.1602 & --- & --- & Degenerate single-observation base year
+(Canada) \\
+2006 & -0.1500 & 0.0455 & \(<0.0001\) & Statistically below grand
+mean \\
+2007 & +0.0120 & 0.0431 & 0.0006 & Near grand mean \\
+2008 & +0.0463 & 0.0439 & 0.0095 & Positive global residual \\
+2009 & +0.0861 & 0.0404 & 0.0667 & Positive global residual \\
+2010 & +0.0386 & 0.0351 & 0.0005 & Positive global residual \\
+2011 & +0.0445 & 0.0371 & 0.0018 & Positive global residual \\
+2012 & -0.0284 & 0.0331 & \(<0.0001\) & Cyclical trough \\
+2013 & -0.0925 & 0.0368 & \(<0.0001\) & Cyclical trough \\
+2014 & -0.0722 & 0.0320 & \(<0.0001\) & Cyclical trough \\
+2015 & -0.0847 & 0.0291 & \(<0.0001\) & Cyclical trough \\
+2016 & -0.0914 & 0.0251 & \(<0.0001\) & Cyclical trough \\
+2017 & +0.0098 & 0.0331 & \(<0.0001\) & Recovery to grand mean \\
+2018 & +0.0393 & 0.0358 & 0.0007 & Positive global residual \\
+2019 & +0.0547 & 0.0449 & 0.0187 & Positive global residual \\
+2020 & +0.0594 & 0.0442 & 0.0226 & Positive global residual \\
+2021 & -0.0278 & 0.0498 & 0.0002 & Temporary post-pandemic dip \\
+2022 & -0.0428 & 0.0494 & \(<0.0001\) & Cyclical adjustment \\
+2023 & +0.0388 & 0.0467 & 0.0093 & Positive global residual \\
+\textbf{Linear Trend (2006--2023)} & \textbf{Slope = +0.0015 / year} &
+\textbf{\(SE = 0.0031\)} & \textbf{\(p = 0.6449\)} & \textbf{Flat
+secular trend (\(t=0.4697, R^2=0.0136\))} \\
+\bottomrule
+\end{longtable}
+
+\end{document}
