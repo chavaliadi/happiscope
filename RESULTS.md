@@ -10,14 +10,14 @@ This document serves as the authoritative Numbers Register for HappiScope. Every
 
 | Claim / Metric | Value | Model / Specification | Producing Function | Source File / Output Artifact |
 |---|---|---|---|---|
-| Bivariate Pooled OLS Log GDP Beta | `+0.7750` | Pooled OLS (Complete Cases, N=2,103, SE=0.0132, 95% CI: [0.7490, 0.8009], $R^2=0.6198$) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
-| Bivariate Pooled OLS (Clustered SE) | `+0.7750` | Pooled OLS (Cluster-Robust SE=0.0353, 95% CI: [0.7058, 0.8442]) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
-| Pairwise Bivariate OLS Log GDP Beta | `+0.7609` | Pairwise Complete on GDP and Ladder ($N=2,335, R^2=0.6140$) | `views/the_debate.py` | `views/the_debate.py` |
-| Bivariate Between Estimator Log GDP Beta | `+0.7454` | Between Estimator (Country Means, N=155, SE=0.0398, 95% CI: [0.6668, 0.8240], $R^2=0.6964$) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
-| Bivariate Within FE (Country only) Beta | `+0.7229` | Within Country FE (Entity Clustered SE=0.1526, 95% CI: [0.4236, 1.0222], $R^2_{\text{within}}=0.0974$) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
-| Bivariate Within FE (Country + Year) Beta | `+0.7175` | Two-Way FE (Entity Clustered SE=0.1807, 95% CI: [0.3631, 1.0719], $R^2_{\text{within}}=0.0974$) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
+| Bivariate Pooled OLS Log GDP Beta (raw, ladder points / log unit) | `+0.7750` | Pooled OLS (Complete Cases, N=2,103, SE=0.0132, 95% CI: [0.7490, 0.8009], $R^2=0.6198$) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
+| Bivariate Pooled OLS (Clustered SE) (raw) | `+0.7750` | Pooled OLS (Cluster-Robust SE=0.0353, 95% CI: [0.7058, 0.8442]) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
+| Pairwise Bivariate OLS Log GDP Beta (raw, ladder points / log unit) | `+0.7609` | Pairwise Complete on GDP and Ladder ($N=2,335, R^2=0.6140$) | `views/the_debate.py` | `views/the_debate.py` |
+| Bivariate Between Estimator Log GDP Beta (raw, ladder points / log unit) | `+0.7454` | Between Estimator (Country Means, N=155, SE=0.0398, 95% CI: [0.6668, 0.8240], $R^2=0.6964$) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
+| Bivariate Within FE (Country only) Beta (raw, ladder points / log unit) | `+0.7229` | Within Country FE (Entity Clustered SE=0.1526, 95% CI: [0.4236, 1.0222], $R^2_{\text{within}}=0.0974$) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
+| Bivariate Within FE (Country + Year) Beta (raw, ladder points / log unit) | `+0.7175` | Two-Way FE (Entity Clustered SE=0.1807, 95% CI: [0.3631, 1.0719], $R^2_{\text{within}}=0.0974$) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
 | Bivariate Mundlak Slope Equality Wald | `0.1137` | Wald $\chi^2(1)$ Test ($p = 0.7360$, Cannot Reject Between == Within Equality) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
-| Bivariate Mundlak Difference Coef ($\gamma$) | `+0.0533` | Mean Term Coef $\beta_{\text{between}} - \beta_{\text{within}}$ ($SE=0.1582, z=0.337, p=0.7360$) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
+| Bivariate Mundlak Difference Coef ($\gamma$, raw) | `+0.0533` | Mean Term Coef $\beta_{\text{between}} - \beta_{\text{within}}$ ($SE=0.1582, z=0.337, p=0.7360$) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
 | Easterlin Ratio (Between / Within Country-Only) | `1.0311` | Point Ratio of Between Beta (0.7454) to Within Country-FE Beta (0.7229) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
 | Secular-Trend-Absorbed Ratio (Between / Within Two-Way) | `1.0388` | Point Ratio of Between Beta (0.7454) to Within Two-Way FE Beta (0.7175) | `analysis.panel_models:bivariate_panel_models` | `outputs/bivariate_panel_models.csv` |
 | Joint Test of Year Fixed Effects | `1075.24` | Wald $\chi^2(18)$ Test ($p = 5.75 \times 10^{-217}$, Strongly Significant) | Verification Step C | Session Terminal |
@@ -27,27 +27,27 @@ This document serves as the authoritative Numbers Register for HappiScope. Every
 
 | Claim / Metric | Value | Model / Specification | Producing Function | Source File / Output Artifact |
 |---|---|---|---|---|
-| Pooled OLS Log GDP Beta | `+0.3566` | Pooled OLS (Complete Cases, N=2,103) | `analysis.panel_models:pooled_ols` | `outputs/panel_models_comparison.csv` |
-| Pooled OLS Social Support Beta | `+2.6272` | Pooled OLS (Complete Cases, N=2,103) | `analysis.panel_models:pooled_ols` | `outputs/panel_models_comparison.csv` |
-| Pooled OLS Healthy Life Exp Beta | `+0.0258` | Pooled OLS (Complete Cases, N=2,103) | `analysis.panel_models:pooled_ols` | `outputs/panel_models_comparison.csv` |
-| Pooled OLS Freedom Beta | `+1.2308` | Pooled OLS (Complete Cases, N=2,103) | `analysis.panel_models:pooled_ols` | `outputs/panel_models_comparison.csv` |
-| Pooled OLS Generosity Beta | `+0.5174` | Pooled OLS (Complete Cases, N=2,103) | `analysis.panel_models:pooled_ols` | `outputs/panel_models_comparison.csv` |
-| Pooled OLS Corruption Beta | `-0.7417` | Pooled OLS (Complete Cases, N=2,103) | `analysis.panel_models:pooled_ols` | `outputs/panel_models_comparison.csv` |
+| Pooled OLS Log GDP Beta (raw, ladder points / log unit) | `+0.3566` | Pooled OLS (Complete Cases, N=2,103) | `analysis.panel_models:pooled_ols` | `outputs/panel_models_comparison.csv` |
+| Pooled OLS Social Support Beta (raw) | `+2.6272` | Pooled OLS (Complete Cases, N=2,103) | `analysis.panel_models:pooled_ols` | `outputs/panel_models_comparison.csv` |
+| Pooled OLS Healthy Life Exp Beta (raw) | `+0.0258` | Pooled OLS (Complete Cases, N=2,103) | `analysis.panel_models:pooled_ols` | `outputs/panel_models_comparison.csv` |
+| Pooled OLS Freedom Beta (raw) | `+1.2308` | Pooled OLS (Complete Cases, N=2,103) | `analysis.panel_models:pooled_ols` | `outputs/panel_models_comparison.csv` |
+| Pooled OLS Generosity Beta (raw) | `+0.5174` | Pooled OLS (Complete Cases, N=2,103) | `analysis.panel_models:pooled_ols` | `outputs/panel_models_comparison.csv` |
+| Pooled OLS Corruption Beta (raw) | `-0.7417` | Pooled OLS (Complete Cases, N=2,103) | `analysis.panel_models:pooled_ols` | `outputs/panel_models_comparison.csv` |
 | Pooled OLS Durbin-Watson | `0.5650` | Pooled OLS (Severe Residual Autocorrelation) | `analysis.panel_models:pooled_ols` | `outputs/mundlak_specification.csv` |
-| Between Estimator Log GDP Beta | `+0.3106` | Between Estimator (Country Means, N=155) | `analysis.panel_models:between_estimator` | `outputs/panel_models_comparison.csv` |
-| Between Estimator Social Support Beta | `+2.4157` | Between Estimator (Country Means, N=155) | `analysis.panel_models:between_estimator` | `outputs/panel_models_comparison.csv` |
-| Between Estimator Healthy Life Exp Beta | `+0.0305` | Between Estimator (Country Means, N=155) | `analysis.panel_models:between_estimator` | `outputs/panel_models_comparison.csv` |
-| Between Estimator Freedom Beta | `+1.6438` | Between Estimator (Country Means, N=155) | `analysis.panel_models:between_estimator` | `outputs/panel_models_comparison.csv` |
-| Between Estimator Generosity Beta | `+0.4410` | Between Estimator (Country Means, N=155) | `analysis.panel_models:between_estimator` | `outputs/panel_models_comparison.csv` |
-| Between Estimator Corruption Beta | `-0.6163` | Between Estimator (Country Means, N=155) | `analysis.panel_models:between_estimator` | `outputs/panel_models_comparison.csv` |
+| Between Estimator Log GDP Beta (raw, ladder points / log unit) | `+0.3106` | Between Estimator (Country Means, N=155) | `analysis.panel_models:between_estimator` | `outputs/panel_models_comparison.csv` |
+| Between Estimator Social Support Beta (raw) | `+2.4157` | Between Estimator (Country Means, N=155) | `analysis.panel_models:between_estimator` | `outputs/panel_models_comparison.csv` |
+| Between Estimator Healthy Life Exp Beta (raw) | `+0.0305` | Between Estimator (Country Means, N=155) | `analysis.panel_models:between_estimator` | `outputs/panel_models_comparison.csv` |
+| Between Estimator Freedom Beta (raw) | `+1.6438` | Between Estimator (Country Means, N=155) | `analysis.panel_models:between_estimator` | `outputs/panel_models_comparison.csv` |
+| Between Estimator Generosity Beta (raw) | `+0.4410` | Between Estimator (Country Means, N=155) | `analysis.panel_models:between_estimator` | `outputs/panel_models_comparison.csv` |
+| Between Estimator Corruption Beta (raw) | `-0.6163` | Between Estimator (Country Means, N=155) | `analysis.panel_models:between_estimator` | `outputs/panel_models_comparison.csv` |
 | Between Estimator Durbin-Watson | `2.0096` | Between Estimator (Cross-Sectional Zero Autocorr) | `analysis.panel_models:between_estimator` | `outputs/mundlak_specification.csv` |
-| Within FE Log GDP Beta | `+0.5626` | Two-Way Fixed Effects (Country + Year, Clustered SE) | `analysis.panel_models:within_fe` | `outputs/panel_models_comparison.csv` |
+| Within FE Log GDP Beta (raw, ladder points / log unit) | `+0.5626` | Two-Way Fixed Effects (Country + Year, Clustered SE) | `analysis.panel_models:within_fe` | `outputs/panel_models_comparison.csv` |
 | Within FE Log GDP Clustered SE | `0.1098` | Two-Way Fixed Effects (Entity-Clustered) | `analysis.panel_models:within_fe` | `outputs/panel_models_comparison.csv` |
 | Within FE Log GDP p-value | `3.28e-07` | Two-Way Fixed Effects ($t = 5.12$) | `analysis.panel_models:within_fe` | `outputs/panel_models_comparison.csv` |
-| Within FE Social Support Beta | `+2.4137` | Two-Way Fixed Effects (Entity-Clustered) | `analysis.panel_models:within_fe` | `outputs/panel_models_comparison.csv` |
-| Within FE Healthy Life Exp Beta | `-0.0101` | Two-Way Fixed Effects (Statistically Null, p=0.259) | `analysis.panel_models:within_fe` | `outputs/panel_models_comparison.csv` |
-| Within FE Freedom Beta | `+0.8543` | Two-Way Fixed Effects (Entity-Clustered) | `analysis.panel_models:within_fe` | `outputs/panel_models_comparison.csv` |
-| Within FE Generosity Beta | `+0.6206` | Two-Way Fixed Effects (Entity-Clustered) | `analysis.panel_models:within_fe` | `outputs/panel_models_comparison.csv` |
+| Within FE Social Support Beta (raw) | `+2.4137` | Two-Way Fixed Effects (Entity-Clustered) | `analysis.panel_models:within_fe` | `outputs/panel_models_comparison.csv` |
+| Within FE Healthy Life Exp Beta (raw) | `-0.0101` | Two-Way Fixed Effects (Statistically Null, p=0.259) | `analysis.panel_models:within_fe` | `outputs/panel_models_comparison.csv` |
+| Within FE Freedom Beta (raw) | `+0.8543` | Two-Way Fixed Effects (Entity-Clustered) | `analysis.panel_models:within_fe` | `outputs/panel_models_comparison.csv` |
+| Within FE Generosity Beta (raw) | `+0.6206` | Two-Way Fixed Effects (Entity-Clustered) | `analysis.panel_models:within_fe` | `outputs/panel_models_comparison.csv` |
 | Within FE Corruption Beta | `-0.8282` | Two-Way Fixed Effects (Entity-Clustered) | `analysis.panel_models:within_fe` | `outputs/panel_models_comparison.csv` |
 | Within FE Durbin-Watson | `1.1723` | Two-Way Fixed Effects Residual Autocorrelation | `analysis.panel_models:within_fe` | `outputs/mundlak_specification.csv` |
 | Multivariate Partial Between-to-Within Ratio | `0.5521` | Ratio of Partial Between Beta to Within Beta (0.3106 / 0.5626) | `analysis.panel_models:comparison_table` | `outputs/mundlak_specification.csv` |
@@ -119,17 +119,18 @@ This document serves as the authoritative Numbers Register for HappiScope. Every
 | Claim / Metric | Value | Model / Specification | Producing Function | Source File / Output Artifact |
 |---|---|---|---|---|
 | Life Ladder Raw SD | `1.1357` | Complete Cases (N=2,103, Mean=5.465) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
-| Life Ladder Bivariate GDP Beta (Pairwise) | `+0.7836` | Unconditional OLS, Pairwise ($N=2,335, SE=0.0129, p<0.0001, R^2=0.6140$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
-| Life Ladder Bivariate GDP Beta (Complete Cases) | `+0.7873` | Unconditional OLS, Complete Sample ($N=2,103, SE=0.0135, p<0.0001, R^2=0.6198$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
-| Life Ladder Conditional GDP Beta | `+0.3623` | Fully Standardized, Controlling for 5 Drivers ($SE=0.0226, p=8.69e-55, R^2=0.7532$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
+| Life Ladder Bivariate GDP Beta (Pairwise, standardized, SD / SD) | `+0.7836` | Unconditional OLS, Pairwise ($N=2,335, SE=0.0129, p<0.0001, R^2=0.6140$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
+| Life Ladder Bivariate GDP Beta (Complete Cases, standardized, SD / SD) | `+0.7873` | Unconditional OLS, Complete Sample ($N=2,103, SE=0.0135, p<0.0001, R^2=0.6198$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
+| Life Ladder Conditional GDP Beta (standardized, SD / SD) | `+0.3623` | Fully Standardized, Controlling for 5 Drivers ($SE=0.0226, p=8.69e-55, R^2=0.7532$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
 | Positive Affect Raw SD | `0.1074` | Complete Cases (N=2,098, Mean=0.6538) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
-| Positive Affect Bivariate GDP Beta (Pairwise) | `+0.2309` | Unconditional OLS, Pairwise ($N=2,311, SE=0.0202, p=2.46e-29, R^2=0.0533$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
-| Positive Affect Bivariate GDP Beta (Complete Cases) | `+0.2226` | Unconditional OLS, Complete Sample ($N=2,098, SE=0.0213, p=5.75e-25, R^2=0.0495$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
-| Positive Affect Conditional GDP Beta | `-0.1523` | Fully Standardized, Controlling for 5 Drivers ($SE=0.0344, p=1.02e-05, R^2=0.4274$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
+| Positive Affect Bivariate GDP Beta (Pairwise, standardized, SD / SD) | `+0.2309` | Unconditional OLS, Pairwise ($N=2,311, SE=0.0202, p=2.46e-29, R^2=0.0533$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
+| Positive Affect Bivariate GDP Beta (Complete Cases, standardized, SD / SD) | `+0.2226` | Unconditional OLS, Complete Sample ($N=2,098, SE=0.0213, p=5.75e-25, R^2=0.0495$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
+| Positive Affect Conditional GDP Beta (standardized, SD / SD) | `-0.1523` | Fully Standardized, Controlling for 5 Drivers ($SE=0.0344, p=1.02e-05, R^2=0.4274$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
 | Negative Affect Raw SD | `0.0854` | Complete Cases (N=2,102, Mean=0.2747) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
-| Negative Affect Bivariate GDP Beta (Pairwise) | `-0.2607` | Unconditional OLS, Pairwise ($N=2,319, SE=0.0201, p=2.46e-37, R^2=0.0680$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
-| Negative Affect Bivariate GDP Beta (Complete Cases) | `-0.2691` | Unconditional OLS, Complete Sample ($N=2,102, SE=0.0210, p=3.30e-36, R^2=0.0724$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
-| Negative Affect Conditional GDP Beta | `-0.0527` | Fully Standardized, Controlling for 5 Drivers ($SE=0.0383, p=0.1683, R^2=0.2906$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
+| Negative Affect Bivariate GDP Beta (Pairwise, standardized, SD / SD) | `-0.2607` | Unconditional OLS, Pairwise ($N=2,319, SE=0.0201, p=2.46e-37, R^2=0.0680$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
+| Negative Affect Bivariate GDP Beta (Complete Cases, standardized, SD / SD) | `-0.2691` | Unconditional OLS, Complete Sample ($N=2,102, SE=0.0210, p=3.30e-36, R^2=0.0724$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
+| Negative Affect Conditional GDP Beta (standardized, SD / SD) | `-0.0527` | Fully Standardized, Controlling for 5 Drivers ($SE=0.0383, p=0.1683, R^2=0.2906$) | `analysis.affect:run_affect_models` | `outputs/affect_standardized_comparison.csv` |
+| Log GDP Variance Inflation Factor (Conditional Models) | `4.3286` | Multicollinearity Check in 6-factor model (Pos Affect: 4.33, Neg Affect: 4.33, Ladder: 4.33) | Verification Step A | Session Terminal |
 
 ---
 

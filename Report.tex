@@ -102,28 +102,31 @@ Motivated by contradictory claims regarding the Easterlin Paradox,
 income satiation, and predictive driver importance, we implement panel
 fixed effects, continuous piecewise models, and leak-free validation
 protocols. Regressing Cantril Life Ladder on Log GDP per capita alone
-yields an Easterlin ratio of cross-sectional between-country slope
-(\(\beta = 0.7454\)) to longitudinal within-country slope
-(\(\beta = 0.7229\)) of 1.0311. A bivariate Mundlak specification fails
-to reject equality between these slopes (\(p = 0.7360\)), indicating no
+yields an Easterlin ratio of cross-sectional between-country slope (raw:
+\(\beta = 0.7454\) ladder points per log unit) to longitudinal
+within-country slope (raw: \(\beta = 0.7229\) ladder points per log
+unit) of 1.0311. A bivariate Mundlak specification fails to reject
+equality between these slopes (\(p = 0.7360\)), indicating no
 statistically detectable difference, though the within-country estimate
 is imprecise (\(95\% \text{ CI: } [0.4236, 1.0222]\)). In multivariate
 models, controlling for non-income drivers reduces the between-country
-income slope to \(0.3106\) via cross-sectional collinearity with social
-institutions. Piecewise regression reveals structural fragility: the
-Akaike Information Criterion surface is bimodal across country-cluster
-bootstrap panels, yielding an identification interval spanning
+income slope to raw \(\beta = 0.3106\) ladder points per log unit via
+cross-sectional collinearity with social institutions. Piecewise
+regression reveals structural fragility: the Akaike Information
+Criterion surface is bimodal across country-cluster bootstrap panels,
+yielding an identification interval spanning
 \(\tau \in [7.5319, 10.8600]\) (\(\approx \$1,867\) to \(\$52,052\)).
 The sample AIC minimum (\(\tau = 7.648\)) is identified off a thin tail
 (\(9.99\%\) of observations) with an implausible negative lower slope
-(\(\beta_1 = -0.2811, p = 0.0600\)), whereas the bootstrap median
-(\(\tau = 9.405\)) reveals accelerated positive returns
-(\(\beta_1 = 0.2349, p = 0.0045\); slope above
-\(= 0.5337, p < 0.0001\)). Under forward-chaining temporal splits
-(2019--2023), contemporaneous drivers explain \(R^2 = 0.7604\), but
-adding lagged national happiness increases performance to
-\(R^2 = 0.8913\) (\(F = 28.42, p < 10^{-20}\)), demonstrating
-substantial historical persistence in national well-being.
+(raw \(\beta_1 = -0.2811\) ladder points per log unit, \(p = 0.0600\)),
+whereas the bootstrap median (\(\tau = 9.405\)) reveals accelerated
+positive returns (raw \(\beta_1 = 0.2349\) ladder points per log unit,
+\(p = 0.0045\); slope above \(= 0.5337\) ladder points per log unit,
+\(p < 0.0001\)). Under forward-chaining temporal splits (2019--2023),
+contemporaneous drivers explain \(R^2 = 0.7604\), but adding lagged
+national happiness increases performance to \(R^2 = 0.8913\)
+(\(F = 28.42, p < 10^{-20}\)), demonstrating substantial historical
+persistence in national well-being.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -376,6 +379,30 @@ cross-national generalization to entirely unseen nations. -
 models against naive prior-year prediction (\(Y_{i, t-1}\)) on matched
 samples.
 
+\hypertarget{reporting-units-raw-vs.-standardized-coefficients}{%
+\subsubsection{6.5 Reporting Units: Raw vs.~Standardized
+Coefficients}\label{reporting-units-raw-vs.-standardized-coefficients}}
+
+Throughout this report, regression slopes are explicitly designated as
+either \textbf{raw} or \textbf{standardized} to preserve analytical
+clarity: 1. \textbf{Raw coefficients (ladder points per log unit of GDP
+per capita)}: Used in all panel econometric specifications (Pooled OLS,
+Between Estimator, Within Fixed Effects, and Piecewise Regressions).
+These retain the natural 0--10 metric of the Cantril Life Ladder,
+directly answering how a 1-unit increase in \(\ln(\text{GDP})\)
+(approximately a \(2.72\)-fold increase in real national income per
+capita) affects average national life satisfaction. 2.
+\textbf{Standardized coefficients (SD of outcome per SD of predictor)}:
+Used when comparing relative feature importances across disparate
+physical dimensions (e.g., life expectancy in years vs.~binary
+proportions) and when benchmarking cognitive life evaluation against
+daily emotional affect (Kahneman \& Deaton models). Standardizing
+variables allows scale-free comparability across outcomes with different
+baseline variances. For bivariate regressions, the standardized slope
+equals Pearson's correlation \(r\), mapping directly to variance
+explained (\(R^2 = \beta_{\text{std}}^2\)). Every coefficient in the
+text and tables is explicitly tagged with its operational unit.
+
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \hypertarget{results-eight-empirical-findings}{%
@@ -389,22 +416,25 @@ Test)}\label{finding-1-cross-sectional-vs.-longitudinal-income-elasticity-the-ea
 
 In the unconditioned bivariate specification (\texttt{Life\ Ladder}
 regressed on \texttt{Log\ GDP\ per\ capita} alone), the between-country
-cross-sectional slope is \(\beta_{\text{between}} = 0.7454\)
+cross-sectional slope is raw \(\beta_{\text{between}} = 0.7454\) ladder
+points per log unit
 (\(SE = 0.0398, p < 0.0001, 95\% \text{ CI: } [0.6668, 0.8240]\)). The
-within-country longitudinal slope is \(\beta_{\text{within}} = 0.7229\)
+within-country longitudinal slope is raw
+\(\beta_{\text{within}} = 0.7229\) ladder points per log unit
 (\(SE = 0.1526, p = 2.32 \times 10^{-6}, 95\% \text{ CI: } [0.4236, 1.0222]\)),
 yielding an Easterlin point ratio of \textbf{\texttt{1.0311}}.
 
 Estimating the bivariate Mundlak specification yields
 \(\gamma = \beta_{\text{between}} - \beta_{\text{within}} = +0.0533\)
-(\(SE = 0.1582, z = 0.337, p = 0.7360\); Wald \(\chi^2(1) = 0.1137\)).
-\textbf{We find no statistically detectable difference between the
-between-country and within-country income slopes (\(p = 0.7360\)),
-though the within-country estimate is imprecise}. The data are
-consistent with both moderate and strong longitudinal gains; the
-evidence does not license claiming that Easterlin's paradox is rejected.
-Controlling for secular global growth via Two-Way Fixed Effects yields
-\(\beta_{\text{within, twoway}} = 0.7175\)
+ladder points per log unit (\(SE = 0.1582, z = 0.337, p = 0.7360\); Wald
+\(\chi^2(1) = 0.1137\)). \textbf{We find no statistically detectable
+difference between the between-country and within-country income slopes
+(\(p = 0.7360\)), though the within-country estimate is imprecise}. The
+data are consistent with both moderate and strong longitudinal gains;
+the evidence does not license claiming that Easterlin's paradox is
+rejected. Controlling for secular global growth via Two-Way Fixed
+Effects yields raw \(\beta_{\text{within, twoway}} = 0.7175\) ladder
+points per log unit
 (\(SE = 0.1807, 95\% \text{ CI: } [0.3631, 1.0719]\)), producing a ratio
 of \textbf{\texttt{1.0388}}.
 
@@ -426,7 +456,7 @@ geopolitical fluctuations rather than a persistent directional drift.
 
 \begin{figure}
 \centering
-\includegraphics{figures/fig1_panel_estimator_comparison.pdf}
+\includegraphics{figures/fig1_panel_estimator_comparison.png}
 \caption{Figure 1: Comparison of unstandardized driver coefficients
 across Pooled OLS, Between Estimator, and Two-Way Within Fixed Effects
 (with country-clustered 95\% confidence intervals).}
@@ -438,17 +468,18 @@ Institutional
 Absorption}\label{finding-2-conditional-multivariate-panel-slopes-institutional-absorption}}
 
 When all six WHR drivers are entered simultaneously into panel
-regressions, the between-country income coefficient drops sharply to
-\(\beta_{\text{between}} = 0.3106\), while the within-country
-coefficient is \(\beta_{\text{within}} = 0.5626\)
-(\(SE = 0.1098, p = 3.28 \times 10^{-7}\)). The multivariate Mundlak
-Wald test rejects slope equality jointly across all six drivers
-(\(\chi^2(6) = 16.7814, p = 0.0101\)) and for Log GDP specifically
-(\(\chi^2(1) = 4.9606, p = 0.0259\)). This divergence occurs because
-cross-sectional differences in income are heavily collinear with
-country-mean social support (\(\beta = 2.4157\)) and life expectancy
-(\(\beta = 0.0305, \chi^2=7.87, p=0.0050\)), which absorb
-between-country income variation.
+regressions, the between-country income coefficient drops sharply to raw
+\(\beta_{\text{between}} = 0.3106\) ladder points per log unit, while
+the within-country coefficient is raw \(\beta_{\text{within}} = 0.5626\)
+ladder points per log unit (\(SE = 0.1098, p = 3.28 \times 10^{-7}\)).
+The multivariate Mundlak Wald test rejects slope equality jointly across
+all six drivers (\(\chi^2(6) = 16.7814, p = 0.0101\)) and for Log GDP
+specifically (\(\chi^2(1) = 4.9606, p = 0.0259\)). This divergence
+occurs because cross-sectional differences in income are heavily
+collinear with country-mean social support (\(\beta = 2.4157\) ladder
+points per unit) and life expectancy (\(\beta = 0.0305\) ladder points
+per year, \(\chi^2=7.87, p=0.0050\)), which absorb between-country
+income variation.
 
 \hypertarget{finding-3-breakpoint-fragility-accelerated-non-satiation}{%
 \subsubsection{Finding 3: Breakpoint Fragility \& Accelerated
@@ -469,8 +500,9 @@ to threshold selection (\emph{Figure 2}):
   >{\centering\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.11}}@{}}
 \toprule
 Specification & Threshold \(\tau\) & \(N_{\text{below}}\) (\%) &
-\(N_{\text{above}}\) (\%) & Slope Below (\(\beta_1\)) & Slope Change
-(\(\beta_2\)) & Slope Above (\(\beta_1 + \beta_2\)) & \(R^2\) & AIC \\
+\(N_{\text{above}}\) (\%) & Slope Below (\(\beta_1\), raw) & Slope
+Change (\(\beta_2\), raw) & Slope Above (\(\beta_1 + \beta_2\), raw) &
+\(R^2\) & AIC \\
 \midrule
 \endhead
 \textbf{Sample AIC Minimum} & 7.648 & 210 (9.99\%) & 1,893 (90.01\%) &
@@ -487,18 +519,20 @@ distribution spanning a 95\% confidence interval of
 \(\tau \in [7.5319, 10.8600]\) (\(\approx \$1,867\) to \(\$52,052\)).
 The lower mode (\(\tau = 7.648\)) is identified off a thin tail
 (\(9.99\%\) of panel rows) and estimates an economically implausible
-negative lower slope (\(\beta_1 = -0.2811\)), which is statistically
-indistinguishable from zero (\(p = 0.0600\)) and represents a
-small-sample tail artifact. The substantively preferred threshold is
-\(\tau = 9.405\) (the bootstrap median), where the lower slope is
-positive (\(\beta_1 = +0.2349, p = 0.0045\)) and the upper slope
-accelerates to \(+0.5337\) (\(p < 0.0001\)). Across both specifications,
-\textbf{we find no evidence of income satiation; rather, the
-income-happiness relationship accelerates above the breakpoint}.
+negative lower slope (raw \(\beta_1 = -0.2811\) ladder points per log
+unit), which is statistically indistinguishable from zero
+(\(p = 0.0600\)) and represents a small-sample tail artifact. The
+substantively preferred threshold is \(\tau = 9.405\) (the bootstrap
+median), where the lower slope is positive (raw \(\beta_1 = +0.2349\)
+ladder points per log unit, \(p = 0.0045\)) and the upper slope
+accelerates to raw \(+0.5337\) ladder points per log unit
+(\(p < 0.0001\)). Across both specifications, \textbf{we find no
+evidence of income satiation; rather, the income-happiness relationship
+accelerates above the breakpoint}.
 
 \begin{figure}
 \centering
-\includegraphics{figures/fig2_breakpoint_bootstrap_and_stability.pdf}
+\includegraphics{figures/fig2_breakpoint_bootstrap_and_stability.png}
 \caption{Figure 2: Distribution of breakpoint tau under whole-country
 block bootstrap (1,000 resamples) showing bimodal density, alongside
 annual significance p-values of slope change beta2 (2006--2023).}
@@ -525,7 +559,7 @@ errors from \(96.15\) to \(74.51\).
 
 \begin{figure}
 \centering
-\includegraphics{figures/fig3_leak_free_model_benchmarks.pdf}
+\includegraphics{figures/fig3_leak_free_model_benchmarks.png}
 \caption{Figure 3: Out-of-sample predictive accuracy (R-squared) across
 forward-chaining temporal splits and GroupKFold cross-validation,
 demonstrating incremental predictive gain from contemporaneous drivers
@@ -586,23 +620,33 @@ bivariate standardized slopes are \(+0.7873\) for Life Ladder,
 \(+0.2226\) for Positive affect, and \(-0.2691\) for Negative affect).}
 
 Unconditionally, national economic output is moderately associated with
-higher positive daily affect (\(\beta = +0.2309\)) and lower negative
-affect (\(\beta = -0.2607\)). However, once non-economic developmental
-channels are accounted for---\textbf{holding social support, health,
-freedom, generosity, and corruption constant}---the residual partial
-relationship of Log GDP with positive daily affect turns slightly
-negative (\(\beta = -0.1523, p = 1.02 \times 10^{-5}\)), while its
+higher positive daily affect (standardized \(\beta = +0.2309\) SD per
+SD) and lower negative affect (standardized \(\beta = -0.2607\) SD per
+SD). However, once non-economic developmental channels are accounted
+for---\textbf{holding social support, health, freedom, generosity, and
+corruption constant}---the residual partial relationship of Log GDP with
+positive daily affect turns slightly negative (standardized
+\(\beta = -0.1523\) SD per SD, \(p = 1.02 \times 10^{-5}\)), while its
 relationship with negative affect is statistically indistinguishable
-from zero (\(p = 0.1683\)). This divergence demonstrates that day-to-day
-emotional well-being is mediated primarily through personal freedom and
-social capital rather than direct income, whereas cognitive life
-evaluation (Cantril Life Ladder) retains a robust, positive association
-with economic output both unconditionally (\(\beta = +0.7836\)) and
-conditionally (\(\beta = +0.3623\)).
+from zero (\(p = 0.1683\)).
+
+This pattern is consistent with classical econometric suppression under
+collinearity: the Variance Inflation Factor for Log GDP in these models
+is \(\text{VIF} = 4.33\) (\(4.3286\) for positive affect, \(4.3253\) for
+negative affect), driven by strong collinearity with healthy life
+expectancy (\(\text{VIF} = 3.33\)) and social support
+(\(\text{VIF} = 2.10\)). Crucially, the conditional coefficient
+represents a residual partial association after holding fixed the
+primary developmental channels through which economic growth operates,
+and should not be read as economic growth actively reducing daily
+positive affect. In contrast, cognitive life evaluation (Cantril Life
+Ladder) retains a robust, positive association with economic output both
+unconditionally (standardized \(\beta = +0.7836\) SD per SD) and
+conditionally (standardized \(\beta = +0.3623\) SD per SD).
 
 \begin{figure}
 \centering
-\includegraphics{figures/fig4_affect_standardized_comparison.pdf}
+\includegraphics{figures/fig4_affect_standardized_comparison.png}
 \caption{Figure 4: Comparison of standardized regression coefficients of
 Log GDP on Cantril Life Ladder, Positive Affect, and Negative Affect
 across bivariate (unconditional) and multivariate (conditional on five
@@ -615,11 +659,13 @@ Spillovers}\label{finding-7-relative-regional-income-economic-spillovers}}
 
 Testing the relative income hypothesis by entering own-country Log GDP
 (\(X_{it}\)) and regional mean Log GDP (\(M_{rt}\)) into panel models
-yields: - \textbf{Pooled OLS}: Own GDP \(\beta = +0.3321\)
-(\(p = 8.10 \times 10^{-7}\)); Regional Mean GDP \(\beta = +0.0892\)
-(\(p = 0.1706\), not statistically significant). - \textbf{Two-Way Fixed
-Effects}: Own GDP \(\beta = +0.5543\) (\(p < 0.0001\)); Regional Mean
-GDP \(\beta = +0.1235\) (\(p = 0.1568\), not statistically significant).
+yields: - \textbf{Pooled OLS}: Own GDP raw \(\beta = +0.3321\) ladder
+points per log unit (\(p = 8.10 \times 10^{-7}\)); Regional Mean GDP raw
+\(\beta = +0.0892\) ladder points per log unit (\(p = 0.1706\), not
+statistically significant). - \textbf{Two-Way Fixed Effects}: Own GDP
+raw \(\beta = +0.5543\) ladder points per log unit (\(p < 0.0001\));
+Regional Mean GDP raw \(\beta = +0.1235\) ladder points per log unit
+(\(p = 0.1568\), not statistically significant).
 
 Variance Inflation Factors (\(VIF = 4.69\) for own GDP, \(VIF = 2.81\)
 for regional GDP) confirm no severe multicollinearity. Because the
@@ -658,7 +704,7 @@ Durbin-Watson \(= 1.1723\)).
 
 \begin{figure}
 \centering
-\includegraphics{figures/fig5_regional_fixed_effects_ci.pdf}
+\includegraphics{figures/fig5_regional_fixed_effects_ci.png}
 \caption{Figure 5: Continental regional distributions of centered
 country fixed effects (deviations from global grand mean) with 95\%
 confidence intervals, illustrating baseline well-being premiums and
@@ -687,22 +733,25 @@ the upper mode (\(\tau = 9.405\)), where both lower and upper slopes are
 positive. The data provide no evidence that national well-being plateaus
 at high income levels.
 
-\hypertarget{mediation-in-the-conditional-vs.-unconditional-contrast}{%
-\subsubsection{Mediation in the Conditional vs.~Unconditional
-Contrast}\label{mediation-in-the-conditional-vs.-unconditional-contrast}}
+\hypertarget{institutional-absorption-in-the-conditional-vs.-unconditional-contrast}{%
+\subsubsection{Institutional Absorption in the Conditional
+vs.~Unconditional
+Contrast}\label{institutional-absorption-in-the-conditional-vs.-unconditional-contrast}}
 
 The contrast between bivariate and multivariate panel models reveals an
-important institutional mediation pathway. In unconditioned bivariate
+important institutional absorption dynamic. In unconditioned bivariate
 models, between- and within-country income slopes are statistically
-indistinguishable (\(\beta \approx 0.72 - 0.75, p = 0.7360\)). However,
-when non-income drivers are included, the cross-sectional income
-coefficient declines to \(0.3106\), while the within-country coefficient
-remains \(0.5626\). Across countries, wealth strongly co-moves with
-institutional capacity, public health, and social capital. In the
-cross-section, these institutional variables absorb much of the apparent
-income effect. Longitudinally within countries, institutional factors
-adjust slowly, allowing economic fluctuations to directly register on
-national life satisfaction.
+indistinguishable (raw \(\beta \approx 0.72 - 0.75\) ladder points per
+log unit, \(p = 0.7360\)). However, when non-income drivers are
+included, the cross-sectional income coefficient declines to raw
+\(\beta = 0.3106\) ladder points per log unit, while the within-country
+coefficient remains raw \(\beta = 0.5626\) ladder points per log unit.
+Across countries, wealth strongly co-moves with institutional capacity,
+public health, and social capital. In the cross-section, these
+institutional variables absorb much of the apparent income effect.
+Longitudinally within countries, institutional factors adjust slowly,
+allowing economic fluctuations to directly register on national life
+satisfaction.
 
 \hypertarget{self-audit-ranking-comparison-method-change}{%
 \subsubsection{Self-Audit: Ranking Comparison Method
@@ -846,8 +895,9 @@ Test)}\label{table-a1-bivariate-panel-estimators-easterlin-paradox-test}}
   >{\centering\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.12}}
   >{\centering\arraybackslash}p{(\columnwidth - 16\tabcolsep) * \real{0.12}}@{}}
 \toprule
-Estimator & Specification & Beta & SE & \(p\)-value & \(95\%\) CI &
-\(R^2\) & \(N_{\text{obs}}\) & \(N_{\text{countries}}\) \\
+Estimator & Specification & Raw Beta (ladder points / log unit) & SE &
+\(p\)-value & \(95\%\) CI & \(R^2\) & \(N_{\text{obs}}\) &
+\(N_{\text{countries}}\) \\
 \midrule
 \endhead
 1. Pooled OLS & Homoskedastic SE & 0.7750 & 0.0132 & \(<0.0001\) &
@@ -870,10 +920,16 @@ Decomposition}\label{table-a2-multivariate-conditional-driver-decomposition}}
 \emph{Source:
 \href{file:///Users/srinivasch/Desktop/Happiscope/outputs/panel_models_comparison.csv}{\texttt{outputs/panel\_models\_comparison.csv}}}
 
-\begin{longtable}[]{@{}lccccc@{}}
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.14}}
+  >{\centering\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.17}}
+  >{\centering\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.17}}
+  >{\centering\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.17}}
+  >{\centering\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.17}}
+  >{\centering\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.17}}@{}}
 \toprule
-Driver & Pooled Beta & Between Beta & Within Beta & Clustered SE &
-Within \(p\)-value \\
+Driver & Pooled Raw Beta & Between Raw Beta & Within Raw Beta &
+Clustered SE & Within \(p\)-value \\
 \midrule
 \endhead
 Log GDP per capita & +0.3566 & +0.3106 & +0.5626 & 0.1098 &
